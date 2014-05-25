@@ -1,0 +1,2342 @@
+<project name="wh_words" app="Snap! 4.0, http://snap.berkeley.edu" version="1">
+  <notes/>
+  <thumbnail>data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAAB4CAYAAAB1ovlvAAAE/UlEQVR4Xu2aTyt1bRSH1yF/ii9gSGYkBj6AJANJDJAYKwZigqKIwoRMlDEDDEgykOILKBIjYugTEArPu+96z3t4H+fscyZrtfa1R7az1r3W+v2u9t7n3if19c8hHCigpEAKAJWUp2xQAAABQVUBAFSVn+IACAOqCgCgqvwUB0AYUFUAAFXlpzgAwoCqAgCoKj/FARAGVBUAQFX5KQ6AMKCqAACqyk9xAIQBVQUAUFV+igMgDKgqAICq8lMcAGFAVQEAVJWf4gAIA6oKAKCq/BQHQBhQVQAAVeWnOADCgKoCAKgqP8UBEAZUFQBAVfkpDoAwoKoAAKrKT3EAhAFVBQBQVX6KAyAMqCoAgKryUxwAYUBVAQBUlZ/iAAgDqgoAoKr8FAdAGFBVAABV5ac4AMKAqgIAqCo/xQEQBlQVAEBV+SkOgDCgqgAAqspPcQCEAVUFAFBVfooDIAyoKgCAqvJTHAALZOD5+VkGBwdD9vb2tlRUVBS4UrLTALBA/7u7u79lHhwcFLhSstMAsED/AbBA4X6kAWABOr6+vsrHx4cMDQ2F7K2tLSkuLpby8vICVkt2CgDm6f/KyopMTk6GrJeXF/n8/JTKyspwnvlZnssmNhwAc1h/fn4uLS0tIerq6koaGxuzZlxeXkpTU1OIycxNLGE5BgfALAJlPuf9/JKxtLQk09PTIXt5eVmmpqa+rZQtFxj/UwAAf6FhZmZGbm9vJZVKydfXl9TX10tpaWk6+u3tTcrKysJ55t/R+fv7u9zc3EhRUVG4RdfV1cni4iLc/UUBAPwFi8x9vgjC/f39vADKvAKyT/i7dACYBasIwqOjI+nv7w9RT09PUlVVJWtrazI+Pv4tc319XcbGxtIx0Yc7OzvS2dnJJnUWjQEwxnVtb29Pent7Q+Tc3Fx4A1JbW/st8+7uLrwRmZ+fD//f3d2Vvr6+GKsnOwQAY/h/cnIi7e3t6cj7+/v/Afjw8CA1NTXpmNPTU2lra4uxerJDADBP/zc2NmRkZCRknZ2dhS8ora2t4Xxzc1OGh4fzXDHZ4QAY0//j42Pp6OiQ6+traWhoCFkRjBGAo6Oj4fzffcLDw0Pp6uqKuXKywwAwpv/R811JSUnO57ro2S96TTcwMBBz5WSHAWAM/6M9vdnZ2XTkb7986enpCTHRVXFhYSHsHXJkVwAAYxDy85cvzc3Nf826uLgIG9fR5nN08BOt3OICYG6N5PHxUSYmJnJeATNBXV1dlerq6hirJzsEAPPwP7oV57qtxonJo6T7UAB0b7HtAQHQtj/uuwNA9xbbHhAAbfvjvjsAdG+x7QEB0LY/7rsDQPcW2x4QAG374747AHRvse0BAdC2P+67A0D3FtseEABt++O+OwB0b7HtAQHQtj/uuwNA9xbbHhAAbfvjvjsAdG+x7QEB0LY/7rsDQPcW2x4QAG374747AHRvse0BAdC2P+67A0D3FtseEABt++O+OwB0b7HtAQHQtj/uuwNA9xbbHhAAbfvjvjsAdG+x7QEB0LY/7rsDQPcW2x4QAG374747AHRvse0BAdC2P+67A0D3FtseEABt++O+OwB0b7HtAQHQtj/uuwNA9xbbHhAAbfvjvjsAdG+x7QEB0LY/7rsDQPcW2x4QAG374747AHRvse0BAdC2P+67A0D3FtseEABt++O+OwB0b7HtAQHQtj/uuwNA9xbbHvAPCF2zt7jxQhEAAAAASUVORK5CYII=</thumbnail>
+  <stage name="Stage" width="480" height="360" costume="0" tempo="60" threadsafe="false" lines="round" codify="false" scheduled="false" id="1">
+    <pentrails>data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAeAAAAFoCAYAAACPNyggAAAOhUlEQVR4Xu3VwQkAAAjEMN1/abewn7jAQRC64wgQIECAAIF3gX1fNEiAAAECBAiMAHsCAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQICLAfIECAAAECgYAAB+gmCRAgQICAAPsBAgQIECAQCAhwgG6SAAECBAgIsB8gQIAAAQKBgAAH6CYJECBAgIAA+wECBAgQIBAICHCAbpIAAQIECAiwHyBAgAABAoGAAAfoJgkQIECAgAD7AQIECBAgEAgIcIBukgABAgQIHLFxAWmhEwHPAAAAAElFTkSuQmCC</pentrails>
+    <costumes>
+      <list id="2"/>
+    </costumes>
+    <sounds>
+      <list id="3"/>
+    </sounds>
+    <variables/>
+    <blocks/>
+    <scripts/>
+    <sprites>
+      <sprite name="Graph" idx="1" x="0" y="0" heading="90" scale="1" rotation="1" draggable="false" costume="0" color="80,80,80" pen="tip" id="8">
+        <costumes>
+          <list id="9"/>
+        </costumes>
+        <sounds>
+          <list id="10"/>
+        </sounds>
+        <variables/>
+        <blocks/>
+        <scripts>
+          <script x="20" y="119">
+            <custom-block s="wh-words %s">
+              <custom-block s="sentence-&gt;list %txt">
+                <l>Now I throw the ball to first base, whoever it is drops the ball, so the guy runs to second. Who picks up the ball and throws it to What. What throws it to I Don&apos;t Know. I Don&apos;t Know throws it back to Tomorrow—a triple play.</l>
+              </custom-block>
+            </custom-block>
+          </script>
+          <script x="1116.0000009999999" y="150.000002">
+            <block var="words"/>
+          </script>
+        </scripts>
+        <graph>{&quot;directed&quot;:false,&quot;multigraph&quot;:false,&quot;graph&quot;:[[&quot;__costumes__&quot;,{}]],&quot;nodes&quot;:[],&quot;links&quot;:[]}</graph>
+        <nodeattrs/>
+        <edgeattrs/>
+      </sprite>
+    </sprites>
+    <nodeattrs/>
+    <edgeattrs/>
+  </stage>
+  <hidden/>
+  <headers/>
+  <code/>
+  <blocks>
+    <block-definition s="wh-words %&apos;words&apos;" type="reporter" category="variables">
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%s"/>
+      </inputs>
+      <script>
+        <block s="doDeclareVariables">
+          <list>
+            <l>result</l>
+          </list>
+        </block>
+        <block s="doSetVar">
+          <l>result</l>
+          <block s="reportNewList">
+            <list/>
+          </block>
+        </block>
+        <block s="doForEach">
+          <l>word</l>
+          <block var="words"/>
+          <script>
+            <block s="doIf">
+              <block s="reportAnd">
+                <block s="reportEquals">
+                  <block s="reportLetter">
+                    <l>1</l>
+                    <block var="word"/>
+                  </block>
+                  <l>w</l>
+                </block>
+                <block s="reportEquals">
+                  <block s="reportLetter">
+                    <l>2</l>
+                    <block var="word"/>
+                  </block>
+                  <l>h</l>
+                </block>
+              </block>
+              <script>
+                <block s="doInsertInList">
+                  <block var="word"/>
+                  <l>
+                    <option>last</option>
+                  </l>
+                  <block var="result"/>
+                </block>
+              </script>
+            </block>
+          </script>
+        </block>
+        <block s="doReport">
+          <block var="result"/>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="map %&apos;function&apos; over %&apos;lists&apos;" type="reporter" category="lists">
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%repRing"/>
+        <input type="%mult%l"/>
+      </inputs>
+      <script>
+        <block s="doWarp">
+          <script>
+            <block s="doDeclareVariables">
+              <list>
+                <l>mapone</l>
+                <l>mapmany</l>
+              </list>
+            </block>
+            <block s="doSetVar">
+              <l>mapone</l>
+              <block s="reifyScript">
+                <script>
+                  <block s="doIf">
+                    <custom-block s="empty? %l">
+                      <block var="data"/>
+                    </custom-block>
+                    <script>
+                      <block s="doReport">
+                        <block s="reportNewList">
+                          <list/>
+                        </block>
+                      </block>
+                    </script>
+                  </block>
+                  <block s="doReport">
+                    <block s="reportCONS">
+                      <block s="evaluate">
+                        <block var="function"/>
+                        <list>
+                          <block s="reportListItem">
+                            <l>1</l>
+                            <block var="data"/>
+                          </block>
+                        </list>
+                      </block>
+                      <block s="evaluate">
+                        <block var="mapone"/>
+                        <list>
+                          <block s="reportCDR">
+                            <block var="data"/>
+                          </block>
+                        </list>
+                      </block>
+                    </block>
+                  </block>
+                </script>
+                <list>
+                  <l>data</l>
+                </list>
+              </block>
+            </block>
+            <block s="doSetVar">
+              <l>mapmany</l>
+              <block s="reifyScript">
+                <script>
+                  <block s="doIf">
+                    <custom-block s="empty? %l">
+                      <block s="reportListItem">
+                        <l>1</l>
+                        <block var="data lists"/>
+                      </block>
+                    </custom-block>
+                    <script>
+                      <block s="doReport">
+                        <block s="reportNewList">
+                          <list/>
+                        </block>
+                      </block>
+                    </script>
+                  </block>
+                  <block s="doReport">
+                    <block s="reportCONS">
+                      <block s="evaluate">
+                        <block var="function"/>
+                        <custom-block s="map %repRing over %mult%l">
+                          <block s="reifyReporter">
+                            <autolambda>
+                              <block s="reportListItem">
+                                <l>1</l>
+                                <l/>
+                              </block>
+                            </autolambda>
+                            <list/>
+                          </block>
+                          <list>
+                            <block var="data lists"/>
+                          </list>
+                        </custom-block>
+                      </block>
+                      <block s="evaluate">
+                        <block var="mapmany"/>
+                        <list>
+                          <custom-block s="map %repRing over %mult%l">
+                            <block s="reifyReporter">
+                              <autolambda>
+                                <block s="reportCDR">
+                                  <l/>
+                                </block>
+                              </autolambda>
+                              <list/>
+                            </block>
+                            <list>
+                              <block var="data lists"/>
+                            </list>
+                          </custom-block>
+                        </list>
+                      </block>
+                    </block>
+                  </block>
+                </script>
+                <list>
+                  <l>data lists</l>
+                </list>
+              </block>
+            </block>
+            <block s="doIfElse">
+              <custom-block s="empty? %l">
+                <block s="reportCDR">
+                  <block var="lists"/>
+                </block>
+              </custom-block>
+              <script>
+                <block s="doReport">
+                  <block s="evaluate">
+                    <block var="mapone"/>
+                    <list>
+                      <block s="reportListItem">
+                        <l>1</l>
+                        <block var="lists"/>
+                      </block>
+                    </list>
+                  </block>
+                </block>
+              </script>
+              <script>
+                <block s="doReport">
+                  <block s="evaluate">
+                    <block var="mapmany"/>
+                    <list>
+                      <block var="lists"/>
+                    </list>
+                  </block>
+                </block>
+              </script>
+            </block>
+          </script>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="empty? %&apos;data&apos;" type="predicate" category="lists">
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%l"/>
+      </inputs>
+      <script>
+        <block s="doReport">
+          <block s="reportEquals">
+            <block var="data"/>
+            <block s="reportNewList">
+              <list/>
+            </block>
+          </block>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="keep items such that %&apos;pred&apos; from %&apos;data&apos;" type="reporter" category="lists">
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%predRing"/>
+        <input type="%l"/>
+      </inputs>
+      <script>
+        <block s="doWarp">
+          <script>
+            <block s="doIf">
+              <custom-block s="empty? %l">
+                <block var="data"/>
+              </custom-block>
+              <script>
+                <block s="doReport">
+                  <block s="reportNewList">
+                    <list/>
+                  </block>
+                </block>
+              </script>
+            </block>
+            <block s="doIfElse">
+              <block s="evaluate">
+                <block var="pred"/>
+                <list>
+                  <block s="reportListItem">
+                    <l>1</l>
+                    <block var="data"/>
+                  </block>
+                </list>
+              </block>
+              <script>
+                <block s="doReport">
+                  <block s="reportCONS">
+                    <block s="reportListItem">
+                      <l>1</l>
+                      <block var="data"/>
+                    </block>
+                    <custom-block s="keep items such that %predRing from %l">
+                      <block var="pred"/>
+                      <block s="reportCDR">
+                        <block var="data"/>
+                      </block>
+                    </custom-block>
+                  </block>
+                </block>
+              </script>
+              <script>
+                <block s="doReport">
+                  <custom-block s="keep items such that %predRing from %l">
+                    <block var="pred"/>
+                    <block s="reportCDR">
+                      <block var="data"/>
+                    </block>
+                  </custom-block>
+                </block>
+              </script>
+            </block>
+          </script>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="combine with %&apos;function&apos; items of %&apos;data&apos;" type="reporter" category="lists">
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%repRing"/>
+        <input type="%l"/>
+      </inputs>
+      <script>
+        <block s="doWarp">
+          <script>
+            <block s="doIf">
+              <custom-block s="empty? %l">
+                <block s="reportCDR">
+                  <block var="data"/>
+                </block>
+              </custom-block>
+              <script>
+                <block s="doReport">
+                  <block s="reportListItem">
+                    <l>1</l>
+                    <block var="data"/>
+                  </block>
+                </block>
+              </script>
+            </block>
+            <block s="doReport">
+              <block s="evaluate">
+                <block var="function"/>
+                <list>
+                  <block s="reportListItem">
+                    <l>1</l>
+                    <block var="data"/>
+                  </block>
+                  <custom-block s="combine with %repRing items of %l">
+                    <block var="function"/>
+                    <block s="reportCDR">
+                      <block var="data"/>
+                    </block>
+                  </custom-block>
+                </list>
+              </block>
+            </block>
+          </script>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="if %&apos;test&apos; then %&apos;true&apos; else %&apos;false&apos;" type="reporter" category="control">
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%b"/>
+        <input type="%anyUE"/>
+        <input type="%anyUE"/>
+      </inputs>
+      <script>
+        <block s="doIfElse">
+          <block var="test"/>
+          <script>
+            <block s="doReport">
+              <block s="evaluate">
+                <block var="true"/>
+                <list/>
+              </block>
+            </block>
+          </script>
+          <script>
+            <block s="doReport">
+              <block s="evaluate">
+                <block var="false"/>
+                <list/>
+              </block>
+            </block>
+          </script>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="for %&apos;i&apos; = %&apos;start&apos; to %&apos;end&apos; %&apos;action&apos;" type="command" category="control">
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%upvar"/>
+        <input type="%n">1</input>
+        <input type="%n">10</input>
+        <input type="%cs"/>
+      </inputs>
+      <script>
+        <block s="doDeclareVariables">
+          <list>
+            <l>step</l>
+            <l>tester</l>
+          </list>
+        </block>
+        <block s="doIfElse">
+          <block s="reportGreaterThan">
+            <block var="start"/>
+            <block var="end"/>
+          </block>
+          <script>
+            <block s="doSetVar">
+              <l>step</l>
+              <l>-1</l>
+            </block>
+            <block s="doSetVar">
+              <l>tester</l>
+              <block s="reifyReporter">
+                <autolambda>
+                  <block s="reportLessThan">
+                    <block var="i"/>
+                    <block var="end"/>
+                  </block>
+                </autolambda>
+                <list/>
+              </block>
+            </block>
+          </script>
+          <script>
+            <block s="doSetVar">
+              <l>step</l>
+              <l>1</l>
+            </block>
+            <block s="doSetVar">
+              <l>tester</l>
+              <block s="reifyReporter">
+                <autolambda>
+                  <block s="reportGreaterThan">
+                    <block var="i"/>
+                    <block var="end"/>
+                  </block>
+                </autolambda>
+                <list/>
+              </block>
+            </block>
+          </script>
+        </block>
+        <block s="doSetVar">
+          <l>i</l>
+          <block var="start"/>
+        </block>
+        <block s="doUntil">
+          <block s="evaluate">
+            <block var="tester"/>
+            <list/>
+          </block>
+          <script>
+            <block s="doRun">
+              <block var="action"/>
+              <list/>
+            </block>
+            <block s="doChangeVar">
+              <l>i</l>
+              <block var="step"/>
+            </block>
+          </script>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="join words %&apos;words&apos;" type="reporter" category="operators">
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%mult%txt"/>
+      </inputs>
+      <script>
+        <block s="doWarp">
+          <script>
+            <block s="doIf">
+              <custom-block s="empty? %l">
+                <block s="reportCDR">
+                  <block var="words"/>
+                </block>
+              </custom-block>
+              <script>
+                <block s="doReport">
+                  <block s="reportListItem">
+                    <l>1</l>
+                    <block var="words"/>
+                  </block>
+                </block>
+              </script>
+            </block>
+            <block s="doReport">
+              <block s="reportJoinWords">
+                <list>
+                  <block s="reportListItem">
+                    <l>1</l>
+                    <block var="words"/>
+                  </block>
+                  <block s="reportJoinWords">
+                    <list>
+                      <l/>
+                      <block s="evaluate">
+                        <block s="reifyReporter">
+                          <autolambda>
+                            <custom-block s="join words %mult%txt">
+                              <block s="reportCDR">
+                                <block var="words"/>
+                              </block>
+                            </custom-block>
+                          </autolambda>
+                          <list/>
+                        </block>
+                        <list/>
+                      </block>
+                    </list>
+                  </block>
+                </list>
+              </block>
+            </block>
+          </script>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="list-&gt;sentence %&apos;data&apos;" type="reporter" category="operators">
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%l"/>
+      </inputs>
+      <script>
+        <block s="doWarp">
+          <script>
+            <block s="doReport">
+              <custom-block s="combine with %repRing items of %l">
+                <block s="reifyReporter">
+                  <autolambda>
+                    <custom-block s="join words %mult%txt">
+                      <list>
+                        <l/>
+                        <l/>
+                      </list>
+                    </custom-block>
+                  </autolambda>
+                  <list/>
+                </block>
+                <block var="data"/>
+              </custom-block>
+            </block>
+          </script>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="sentence-&gt;list %&apos;text&apos;" type="reporter" category="operators">
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%txt"/>
+      </inputs>
+      <script>
+        <block s="doWarp">
+          <script>
+            <block s="doDeclareVariables">
+              <list>
+                <l>result</l>
+                <l>thisword</l>
+                <l>emptyword</l>
+              </list>
+            </block>
+            <block s="doSetVar">
+              <l>result</l>
+              <block s="reportNewList">
+                <list/>
+              </block>
+            </block>
+            <block s="doSetVar">
+              <l>thisword</l>
+              <l/>
+            </block>
+            <block s="doSetVar">
+              <l>emptyword</l>
+              <l/>
+            </block>
+            <custom-block s="for %upvar = %n to %n %cs">
+              <l>i</l>
+              <l>1</l>
+              <block s="reportStringSize">
+                <block var="text"/>
+              </block>
+              <script>
+                <block s="doIfElse">
+                  <block s="reportEquals">
+                    <block s="reportLetter">
+                      <block var="i"/>
+                      <block var="text"/>
+                    </block>
+                    <l/>
+                  </block>
+                  <script>
+                    <block s="doIf">
+                      <block s="reportNot">
+                        <block s="reportEquals">
+                          <block var="thisword"/>
+                          <block var="emptyword"/>
+                        </block>
+                      </block>
+                      <script>
+                        <block s="doAddToList">
+                          <block var="thisword"/>
+                          <block var="result"/>
+                        </block>
+                        <block s="doSetVar">
+                          <l>thisword</l>
+                          <block var="emptyword"/>
+                        </block>
+                      </script>
+                    </block>
+                  </script>
+                  <script>
+                    <block s="doSetVar">
+                      <l>thisword</l>
+                      <block s="reportJoinWords">
+                        <list>
+                          <block var="thisword"/>
+                          <block s="reportLetter">
+                            <block var="i"/>
+                            <block var="text"/>
+                          </block>
+                        </list>
+                      </block>
+                    </block>
+                  </script>
+                </block>
+              </script>
+            </custom-block>
+            <block s="doIf">
+              <block s="reportNot">
+                <block s="reportEquals">
+                  <block var="thisword"/>
+                  <block var="emptyword"/>
+                </block>
+              </block>
+              <script>
+                <block s="doAddToList">
+                  <block var="thisword"/>
+                  <block var="result"/>
+                </block>
+              </script>
+            </block>
+            <block s="doReport">
+              <block var="result"/>
+            </block>
+          </script>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="catch %&apos;tag&apos; %&apos;action&apos;" type="command" category="control">
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%upvar"/>
+        <input type="%cs"/>
+      </inputs>
+      <script>
+        <block s="doCallCC">
+          <block s="reifyScript">
+            <script>
+              <block s="doSetVar">
+                <l>tag</l>
+                <block var="cont"/>
+              </block>
+              <block s="doRun">
+                <block var="action"/>
+                <list/>
+              </block>
+            </script>
+            <list>
+              <l>cont</l>
+            </list>
+          </block>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="throw %&apos;cont&apos;" type="command" category="control">
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%s">catchtag</input>
+      </inputs>
+      <script>
+        <block s="doRun">
+          <block var="cont"/>
+          <list/>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="catch %&apos;tag&apos; %&apos;value&apos;" type="reporter" category="control">
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%upvar"/>
+        <input type="%anyUE"/>
+      </inputs>
+      <script>
+        <block s="doCallCC">
+          <block s="reifyScript">
+            <script>
+              <block s="doSetVar">
+                <l>tag</l>
+                <block var="cont"/>
+              </block>
+              <block s="doReport">
+                <block s="evaluate">
+                  <block var="value"/>
+                  <list/>
+                </block>
+              </block>
+            </script>
+            <list>
+              <l>cont</l>
+            </list>
+          </block>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="throw %&apos;tag&apos; %&apos;value&apos;" type="command" category="control">
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%s">catchtag</input>
+        <input type="%s"/>
+      </inputs>
+      <script>
+        <block s="doRun">
+          <block var="tag"/>
+          <list>
+            <block var="value"/>
+          </list>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="for each %&apos;item&apos; of %&apos;data&apos; %&apos;action&apos;" type="command" category="lists">
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%upvar"/>
+        <input type="%l"/>
+        <input type="%cs"/>
+      </inputs>
+      <script>
+        <block s="doUntil">
+          <custom-block s="empty? %l">
+            <block var="data"/>
+          </custom-block>
+          <script>
+            <block s="doSetVar">
+              <l>item</l>
+              <block s="reportListItem">
+                <l>1</l>
+                <block var="data"/>
+              </block>
+            </block>
+            <block s="doRun">
+              <block var="action"/>
+              <list>
+                <block s="reportListItem">
+                  <l>1</l>
+                  <block var="data"/>
+                </block>
+              </list>
+            </block>
+            <block s="doSetVar">
+              <l>data</l>
+              <block s="reportCDR">
+                <block var="data"/>
+              </block>
+            </block>
+          </script>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="append %&apos;lists&apos;" type="reporter" category="lists">
+      <comment x="0" y="0" w="287" collapsed="false">Take any number of input lists, and create a new list containing the items of the input lists.  So&#xD;              APPEND [A B] [C D]&#xD;where the [,,,] are lists reports the list&#xD;              [A B C D]&#xD;not [[A B] [C D]].</comment>
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%mult%l"/>
+      </inputs>
+      <script>
+        <block s="doWarp">
+          <script>
+            <block s="doIf">
+              <block s="reportEquals">
+                <block var="lists"/>
+                <block s="reportNewList">
+                  <list/>
+                </block>
+              </block>
+              <script>
+                <block s="doReport">
+                  <block s="reportNewList">
+                    <list/>
+                  </block>
+                </block>
+              </script>
+            </block>
+            <block s="doIf">
+              <block s="reportEquals">
+                <block s="reportListLength">
+                  <block var="lists"/>
+                </block>
+                <l>1</l>
+              </block>
+              <script>
+                <block s="doReport">
+                  <block s="reportListItem">
+                    <l>1</l>
+                    <block var="lists"/>
+                  </block>
+                </block>
+              </script>
+            </block>
+            <block s="doIf">
+              <block s="reportEquals">
+                <block s="reportListItem">
+                  <l>1</l>
+                  <block var="lists"/>
+                </block>
+                <block s="reportNewList">
+                  <list/>
+                </block>
+              </block>
+              <script>
+                <block s="doReport">
+                  <custom-block s="append %mult%l">
+                    <block s="reportCDR">
+                      <block var="lists"/>
+                    </block>
+                  </custom-block>
+                </block>
+              </script>
+            </block>
+            <block s="doReport">
+              <block s="reportCONS">
+                <block s="reportListItem">
+                  <l>1</l>
+                  <block s="reportListItem">
+                    <l>1</l>
+                    <block var="lists"/>
+                  </block>
+                </block>
+                <custom-block s="append %mult%l">
+                  <block s="reportCONS">
+                    <block s="reportCDR">
+                      <block s="reportListItem">
+                        <l>1</l>
+                        <block var="lists"/>
+                      </block>
+                    </block>
+                    <block s="reportCDR">
+                      <block var="lists"/>
+                    </block>
+                  </block>
+                </custom-block>
+              </block>
+            </block>
+          </script>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="reverse %&apos;data&apos;" type="reporter" category="lists">
+      <comment x="0" y="0" w="223" collapsed="false">Reports a new list containing the items of the input list, but in the opposite order.</comment>
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%l"/>
+      </inputs>
+      <script>
+        <block s="doDeclareVariables">
+          <list>
+            <l>helper</l>
+          </list>
+        </block>
+        <block s="doSetVar">
+          <l>helper</l>
+          <block s="reifyScript">
+            <script>
+              <block s="doIf">
+                <block s="reportEquals">
+                  <block var="input"/>
+                  <block s="reportNewList">
+                    <list/>
+                  </block>
+                </block>
+                <script>
+                  <block s="doReport">
+                    <block var="result"/>
+                  </block>
+                </script>
+              </block>
+              <block s="doReport">
+                <block s="evaluate">
+                  <block var="helper"/>
+                  <list>
+                    <block s="reportCDR">
+                      <block var="input"/>
+                    </block>
+                    <block s="reportCONS">
+                      <block s="reportListItem">
+                        <l>1</l>
+                        <block var="input"/>
+                      </block>
+                      <block var="result"/>
+                    </block>
+                  </list>
+                </block>
+              </block>
+            </script>
+            <list>
+              <l>input</l>
+              <l>result</l>
+            </list>
+          </block>
+        </block>
+        <block s="doWarp">
+          <script>
+            <block s="doReport">
+              <block s="evaluate">
+                <block var="helper"/>
+                <list>
+                  <block var="data"/>
+                  <block s="reportNewList">
+                    <list/>
+                  </block>
+                </list>
+              </block>
+            </block>
+          </script>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="remove duplicates from %&apos;data&apos;" type="reporter" category="lists">
+      <comment x="0" y="0" w="209" collapsed="false">Reports a new list whose items are the same as in the input list, except that if two or more equal items appear in the input list, only the last one is kept in the result.</comment>
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%l"/>
+      </inputs>
+      <script>
+        <block s="doWarp">
+          <script>
+            <block s="doIf">
+              <block s="reportEquals">
+                <block var="data"/>
+                <block s="reportNewList">
+                  <list/>
+                </block>
+              </block>
+              <script>
+                <block s="doReport">
+                  <block s="reportNewList">
+                    <list/>
+                  </block>
+                </block>
+              </script>
+            </block>
+            <block s="doIfElse">
+              <block s="reportListContainsItem">
+                <block s="reportCDR">
+                  <block var="data"/>
+                </block>
+                <block s="reportListItem">
+                  <l>1</l>
+                  <block var="data"/>
+                </block>
+              </block>
+              <script>
+                <block s="doReport">
+                  <custom-block s="remove duplicates from %l">
+                    <block s="reportCDR">
+                      <block var="data"/>
+                    </block>
+                  </custom-block>
+                </block>
+              </script>
+              <script>
+                <block s="doReport">
+                  <block s="reportCONS">
+                    <block s="reportListItem">
+                      <l>1</l>
+                      <block var="data"/>
+                    </block>
+                    <custom-block s="remove duplicates from %l">
+                      <block s="reportCDR">
+                        <block var="data"/>
+                      </block>
+                    </custom-block>
+                  </block>
+                </block>
+              </script>
+            </block>
+          </script>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="sort %&apos;data&apos; ordering with %&apos;function&apos;" type="reporter" category="lists">
+      <comment x="0" y="0" w="204" collapsed="false">Reports a sorted version of the list in its first input slot, using the comparison function in the second input slot.  For a list of numbers, using &lt; as the comparison function will sort from low to high; using &gt; will sort from high to low.</comment>
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%l"/>
+        <input type="%predRing"/>
+      </inputs>
+      <script>
+        <block s="doDeclareVariables">
+          <list>
+            <l>even items</l>
+            <l>odd items</l>
+            <l>merge</l>
+          </list>
+        </block>
+        <block s="doSetVar">
+          <l>odd items</l>
+          <block s="reifyScript">
+            <script>
+              <block s="doIf">
+                <block s="reportEquals">
+                  <l/>
+                  <block s="reportNewList">
+                    <list/>
+                  </block>
+                </block>
+                <script>
+                  <block s="doReport">
+                    <block s="reportNewList">
+                      <list/>
+                    </block>
+                  </block>
+                </script>
+              </block>
+              <block s="doReport">
+                <block s="reportCONS">
+                  <block s="reportListItem">
+                    <l>1</l>
+                    <l/>
+                  </block>
+                  <block s="evaluate">
+                    <block var="even items"/>
+                    <list>
+                      <block s="reportCDR">
+                        <l/>
+                      </block>
+                    </list>
+                  </block>
+                </block>
+              </block>
+            </script>
+            <list/>
+          </block>
+        </block>
+        <block s="doSetVar">
+          <l>even items</l>
+          <block s="reifyScript">
+            <script>
+              <block s="doIf">
+                <block s="reportEquals">
+                  <l/>
+                  <block s="reportNewList">
+                    <list/>
+                  </block>
+                </block>
+                <script>
+                  <block s="doReport">
+                    <block s="reportNewList">
+                      <list/>
+                    </block>
+                  </block>
+                </script>
+              </block>
+              <block s="doReport">
+                <block s="evaluate">
+                  <block var="odd items"/>
+                  <list>
+                    <block s="reportCDR">
+                      <l/>
+                    </block>
+                  </list>
+                </block>
+              </block>
+            </script>
+            <list/>
+          </block>
+        </block>
+        <block s="doSetVar">
+          <l>merge</l>
+          <block s="reifyScript">
+            <script>
+              <block s="doIf">
+                <block s="reportEquals">
+                  <block var="#1"/>
+                  <block s="reportNewList">
+                    <list/>
+                  </block>
+                </block>
+                <script>
+                  <block s="doReport">
+                    <block var="#2"/>
+                  </block>
+                </script>
+              </block>
+              <block s="doIf">
+                <block s="reportEquals">
+                  <block var="#2"/>
+                  <block s="reportNewList">
+                    <list/>
+                  </block>
+                </block>
+                <script>
+                  <block s="doReport">
+                    <block var="#1"/>
+                  </block>
+                </script>
+              </block>
+              <block s="doIfElse">
+                <block s="evaluate">
+                  <block var="function"/>
+                  <list>
+                    <block s="reportListItem">
+                      <l>1</l>
+                      <block var="#1"/>
+                    </block>
+                    <block s="reportListItem">
+                      <l>1</l>
+                      <block var="#2"/>
+                    </block>
+                  </list>
+                </block>
+                <script>
+                  <block s="doReport">
+                    <block s="reportCONS">
+                      <block s="reportListItem">
+                        <l>1</l>
+                        <block var="#1"/>
+                      </block>
+                      <block s="evaluate">
+                        <block var="merge"/>
+                        <list>
+                          <block s="reportCDR">
+                            <block var="#1"/>
+                          </block>
+                          <block var="#2"/>
+                        </list>
+                      </block>
+                    </block>
+                  </block>
+                </script>
+                <script>
+                  <block s="doReport">
+                    <block s="reportCONS">
+                      <block s="reportListItem">
+                        <l>1</l>
+                        <block var="#2"/>
+                      </block>
+                      <block s="evaluate">
+                        <block var="merge"/>
+                        <list>
+                          <block var="#1"/>
+                          <block s="reportCDR">
+                            <block var="#2"/>
+                          </block>
+                        </list>
+                      </block>
+                    </block>
+                  </block>
+                </script>
+              </block>
+            </script>
+            <list>
+              <l>#1</l>
+              <l>#2</l>
+            </list>
+          </block>
+        </block>
+        <block s="doIf">
+          <block s="reportEquals">
+            <block var="data"/>
+            <block s="reportNewList">
+              <list/>
+            </block>
+          </block>
+          <script>
+            <block s="doReport">
+              <block s="reportNewList">
+                <list/>
+              </block>
+            </block>
+          </script>
+        </block>
+        <block s="doIf">
+          <block s="reportEquals">
+            <block s="reportCDR">
+              <block var="data"/>
+            </block>
+            <block s="reportNewList">
+              <list/>
+            </block>
+          </block>
+          <script>
+            <block s="doReport">
+              <block var="data"/>
+            </block>
+          </script>
+        </block>
+        <block s="doReport">
+          <block s="evaluate">
+            <block var="merge"/>
+            <list>
+              <custom-block s="sort %l ordering with %predRing">
+                <block s="evaluate">
+                  <block var="odd items"/>
+                  <list>
+                    <block var="data"/>
+                  </list>
+                </block>
+                <block var="function"/>
+              </custom-block>
+              <custom-block s="sort %l ordering with %predRing">
+                <block s="evaluate">
+                  <block var="even items"/>
+                  <list>
+                    <block var="data"/>
+                  </list>
+                </block>
+                <block var="function"/>
+              </custom-block>
+            </list>
+          </block>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="all but first letter of %&apos;string&apos;" type="reporter" category="operators">
+      <comment x="0" y="0" w="199" collapsed="false">Takes a text string as input, and reports a new text string containing all but the first character of the input.</comment>
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%txt"/>
+      </inputs>
+      <script>
+        <block s="doDeclareVariables">
+          <list>
+            <l>result</l>
+            <l>i</l>
+          </list>
+        </block>
+        <block s="doWarp">
+          <script>
+            <block s="doIf">
+              <block s="reportEquals">
+                <block s="reportStringSize">
+                  <block var="string"/>
+                </block>
+                <l>0</l>
+              </block>
+              <script>
+                <block s="doReport">
+                  <block s="reportListItem">
+                    <l>1</l>
+                    <block s="reportSum">
+                      <l>0</l>
+                      <l>0</l>
+                    </block>
+                  </block>
+                </block>
+              </script>
+            </block>
+            <block s="doSetVar">
+              <l>result</l>
+              <l/>
+            </block>
+            <block s="doSetVar">
+              <l>i</l>
+              <l>2</l>
+            </block>
+            <block s="doUntil">
+              <block s="reportGreaterThan">
+                <block var="i"/>
+                <block s="reportStringSize">
+                  <block var="string"/>
+                </block>
+              </block>
+              <script>
+                <block s="doSetVar">
+                  <l>result</l>
+                  <block s="reportJoinWords">
+                    <list>
+                      <block var="result"/>
+                      <block s="reportLetter">
+                        <block var="i"/>
+                        <block var="string"/>
+                      </block>
+                    </list>
+                  </block>
+                </block>
+                <block s="doChangeVar">
+                  <l>i</l>
+                  <l>1</l>
+                </block>
+              </script>
+            </block>
+            <block s="doReport">
+              <block var="result"/>
+            </block>
+          </script>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="all but first word of %&apos;sentence&apos;" type="reporter" category="operators">
+      <comment x="0" y="0" w="223.000001" collapsed="false">Takes a text string as input, divides it into words treating one or more spaces as a word separator (only spaces count; punctuation is part of the word) and reports a text string containing all but the first word, with one space between words and no spaces at the beginning or end. (Note: consider using SENTENCE-&gt;LIST and processing the resulting list instead of doing recursion on sentences in text string form.  List operations are faster.)</comment>
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%txt"/>
+      </inputs>
+      <script>
+        <block s="doDeclareVariables">
+          <list>
+            <l>index</l>
+            <l>bf</l>
+          </list>
+        </block>
+        <block s="doWarp">
+          <script>
+            <block s="doSetVar">
+              <l>bf</l>
+              <l/>
+            </block>
+            <block s="doSetVar">
+              <l>index</l>
+              <l>1</l>
+            </block>
+            <block s="doIf">
+              <block s="reportEquals">
+                <block s="reportStringSize">
+                  <block var="sentence"/>
+                </block>
+                <l>0</l>
+              </block>
+              <script>
+                <block s="doReport">
+                  <block s="reportListItem">
+                    <l>1</l>
+                    <block s="reportJoinWords">
+                      <list>
+                        <l>empty </l>
+                        <l>sentence</l>
+                      </list>
+                    </block>
+                  </block>
+                </block>
+              </script>
+            </block>
+            <block s="doUntil">
+              <block s="reportOr">
+                <block s="reportEquals">
+                  <block var="index"/>
+                  <block s="reportStringSize">
+                    <block var="sentence"/>
+                  </block>
+                </block>
+                <block s="reportNot">
+                  <block s="reportEquals">
+                    <block s="reportLetter">
+                      <block var="index"/>
+                      <block var="sentence"/>
+                    </block>
+                    <l/>
+                  </block>
+                </block>
+              </block>
+              <script>
+                <block s="doChangeVar">
+                  <l>index</l>
+                  <l>1</l>
+                </block>
+              </script>
+            </block>
+            <block s="doIf">
+              <block s="reportEquals">
+                <block s="reportLetter">
+                  <block var="index"/>
+                  <block var="sentence"/>
+                </block>
+                <l/>
+              </block>
+              <script>
+                <block s="doReport">
+                  <block s="reportListItem">
+                    <l>1</l>
+                    <block s="reportJoinWords">
+                      <list>
+                        <l>empty </l>
+                        <l>sentence</l>
+                      </list>
+                    </block>
+                  </block>
+                </block>
+              </script>
+            </block>
+            <block s="doUntil">
+              <block s="reportOr">
+                <block s="reportEquals">
+                  <block var="index"/>
+                  <block s="reportStringSize">
+                    <block var="sentence"/>
+                  </block>
+                </block>
+                <block s="reportEquals">
+                  <block s="reportLetter">
+                    <block var="index"/>
+                    <block var="sentence"/>
+                  </block>
+                  <l/>
+                </block>
+              </block>
+              <script>
+                <block s="doChangeVar">
+                  <l>index</l>
+                  <l>1</l>
+                </block>
+              </script>
+            </block>
+            <block s="doIf">
+              <block s="reportEquals">
+                <block var="index"/>
+                <block s="reportStringSize">
+                  <block var="sentence"/>
+                </block>
+              </block>
+              <script>
+                <block s="doReport">
+                  <l/>
+                </block>
+              </script>
+            </block>
+            <block s="doUntil">
+              <block s="reportOr">
+                <block s="reportEquals">
+                  <block var="index"/>
+                  <block s="reportStringSize">
+                    <block var="sentence"/>
+                  </block>
+                </block>
+                <block s="reportNot">
+                  <block s="reportEquals">
+                    <block s="reportLetter">
+                      <block var="index"/>
+                      <block var="sentence"/>
+                    </block>
+                    <l/>
+                  </block>
+                </block>
+              </block>
+              <script>
+                <block s="doChangeVar">
+                  <l>index</l>
+                  <l>1</l>
+                </block>
+              </script>
+            </block>
+            <block s="doIf">
+              <block s="reportEquals">
+                <block s="reportLetter">
+                  <block var="index"/>
+                  <block var="sentence"/>
+                </block>
+                <l/>
+              </block>
+              <script>
+                <block s="doReport">
+                  <l/>
+                </block>
+              </script>
+            </block>
+            <block s="doUntil">
+              <block s="reportGreaterThan">
+                <block var="index"/>
+                <block s="reportStringSize">
+                  <block var="sentence"/>
+                </block>
+              </block>
+              <script>
+                <block s="doSetVar">
+                  <l>bf</l>
+                  <block s="reportJoinWords">
+                    <list>
+                      <block var="bf"/>
+                      <block s="reportLetter">
+                        <block var="index"/>
+                        <block var="sentence"/>
+                      </block>
+                    </list>
+                  </block>
+                </block>
+                <block s="doChangeVar">
+                  <l>index</l>
+                  <l>1</l>
+                </block>
+              </script>
+            </block>
+            <block s="doReport">
+              <block var="bf"/>
+            </block>
+          </script>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="all but last letter of %&apos;string&apos;" type="reporter" category="operators">
+      <comment x="0" y="0" w="218" collapsed="false">Takes a text string as input, and reports a new text string containing all but the last letter of the input.</comment>
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%txt"/>
+      </inputs>
+      <script>
+        <block s="doDeclareVariables">
+          <list>
+            <l>result</l>
+            <l>i</l>
+          </list>
+        </block>
+        <block s="doWarp">
+          <script>
+            <block s="doIf">
+              <block s="reportEquals">
+                <block s="reportStringSize">
+                  <block var="string"/>
+                </block>
+                <l>0</l>
+              </block>
+              <script>
+                <block s="doReport">
+                  <block s="reportListItem">
+                    <l>1</l>
+                    <block s="reportSum">
+                      <l>0</l>
+                      <l>0</l>
+                    </block>
+                  </block>
+                </block>
+              </script>
+            </block>
+            <block s="doSetVar">
+              <l>result</l>
+              <l/>
+            </block>
+            <block s="doSetVar">
+              <l>i</l>
+              <l>1</l>
+            </block>
+            <block s="doUntil">
+              <block s="reportEquals">
+                <block var="i"/>
+                <block s="reportStringSize">
+                  <block var="string"/>
+                </block>
+              </block>
+              <script>
+                <block s="doSetVar">
+                  <l>result</l>
+                  <block s="reportJoinWords">
+                    <list>
+                      <block var="result"/>
+                      <block s="reportLetter">
+                        <block var="i"/>
+                        <block var="string"/>
+                      </block>
+                    </list>
+                  </block>
+                </block>
+                <block s="doChangeVar">
+                  <l>i</l>
+                  <l>1</l>
+                </block>
+              </script>
+            </block>
+            <block s="doReport">
+              <block var="result"/>
+            </block>
+          </script>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="all but last word of %&apos;sentence&apos;" type="reporter" category="operators">
+      <comment x="0" y="0" w="212" collapsed="false">Takes a text string as input, divides it into words treating one or more spaces as a word separator (only spaces count; punctuation is part of the word) and reports a text string containing all but the last word, with one space between words and no spaces at the beginning or end.  (Note: consider using SENTENCE-&gt;LIST and processing the resulting list instead of doing recursion on sentences in text string form.  List operations are faster.)</comment>
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%txt"/>
+      </inputs>
+      <script>
+        <block s="doDeclareVariables">
+          <list>
+            <l>index</l>
+            <l>bl</l>
+          </list>
+        </block>
+        <block s="doWarp">
+          <script>
+            <block s="doSetVar">
+              <l>bl</l>
+              <l/>
+            </block>
+            <block s="doSetVar">
+              <l>index</l>
+              <block s="reportStringSize">
+                <block var="sentence"/>
+              </block>
+            </block>
+            <block s="doIf">
+              <block s="reportEquals">
+                <block s="reportStringSize">
+                  <block var="sentence"/>
+                </block>
+                <l>0</l>
+              </block>
+              <script>
+                <block s="doReport">
+                  <block s="reportListItem">
+                    <l>1</l>
+                    <block s="reportJoinWords">
+                      <list>
+                        <l>empty </l>
+                        <l>sentence</l>
+                      </list>
+                    </block>
+                  </block>
+                </block>
+              </script>
+            </block>
+            <block s="doUntil">
+              <block s="reportOr">
+                <block s="reportEquals">
+                  <block var="index"/>
+                  <l>1</l>
+                </block>
+                <block s="reportNot">
+                  <block s="reportEquals">
+                    <block s="reportLetter">
+                      <block var="index"/>
+                      <block var="sentence"/>
+                    </block>
+                    <l/>
+                  </block>
+                </block>
+              </block>
+              <script>
+                <block s="doChangeVar">
+                  <l>index</l>
+                  <l>-1</l>
+                </block>
+              </script>
+            </block>
+            <block s="doIf">
+              <block s="reportEquals">
+                <block s="reportLetter">
+                  <block var="index"/>
+                  <block var="sentence"/>
+                </block>
+                <l/>
+              </block>
+              <script>
+                <block s="doReport">
+                  <block s="reportListItem">
+                    <l>1</l>
+                    <block s="reportJoinWords">
+                      <list>
+                        <l>empty </l>
+                        <l>sentence</l>
+                      </list>
+                    </block>
+                  </block>
+                </block>
+              </script>
+            </block>
+            <block s="doUntil">
+              <block s="reportOr">
+                <block s="reportEquals">
+                  <block var="index"/>
+                  <l>1</l>
+                </block>
+                <block s="reportEquals">
+                  <block s="reportLetter">
+                    <block var="index"/>
+                    <block var="sentence"/>
+                  </block>
+                  <l/>
+                </block>
+              </block>
+              <script>
+                <block s="doChangeVar">
+                  <l>index</l>
+                  <l>-1</l>
+                </block>
+              </script>
+            </block>
+            <block s="doIf">
+              <block s="reportEquals">
+                <block var="index"/>
+                <l>1</l>
+              </block>
+              <script>
+                <block s="doReport">
+                  <l/>
+                </block>
+              </script>
+            </block>
+            <block s="doUntil">
+              <block s="reportOr">
+                <block s="reportEquals">
+                  <block var="index"/>
+                  <l>1</l>
+                </block>
+                <block s="reportNot">
+                  <block s="reportEquals">
+                    <block s="reportLetter">
+                      <block var="index"/>
+                      <block var="sentence"/>
+                    </block>
+                    <l/>
+                  </block>
+                </block>
+              </block>
+              <script>
+                <block s="doChangeVar">
+                  <l>index</l>
+                  <l>-1</l>
+                </block>
+              </script>
+            </block>
+            <block s="doIf">
+              <block s="reportEquals">
+                <block s="reportLetter">
+                  <block var="index"/>
+                  <block var="sentence"/>
+                </block>
+                <l/>
+              </block>
+              <script>
+                <block s="doReport">
+                  <l/>
+                </block>
+              </script>
+            </block>
+            <block s="doUntil">
+              <block s="reportLessThan">
+                <block var="index"/>
+                <l>1</l>
+              </block>
+              <script>
+                <block s="doSetVar">
+                  <l>bl</l>
+                  <block s="reportJoinWords">
+                    <list>
+                      <block s="reportLetter">
+                        <block var="index"/>
+                        <block var="sentence"/>
+                      </block>
+                      <block var="bl"/>
+                    </list>
+                  </block>
+                </block>
+                <block s="doChangeVar">
+                  <l>index</l>
+                  <l>-1</l>
+                </block>
+              </script>
+            </block>
+            <block s="doReport">
+              <block var="bl"/>
+            </block>
+          </script>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="first word of %&apos;sentence&apos;" type="reporter" category="operators">
+      <comment x="0" y="0" w="236" collapsed="false">Takes a text string as input, divides it into words treating one or more spaces as a word separator (only spaces count; punctuation is part of the word) and reports a text string containing only the first word, with no spaces before or after it.</comment>
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%txt"/>
+      </inputs>
+      <script>
+        <block s="doDeclareVariables">
+          <list>
+            <l>index</l>
+            <l>first</l>
+          </list>
+        </block>
+        <block s="doWarp">
+          <script>
+            <block s="doSetVar">
+              <l>first</l>
+              <l/>
+            </block>
+            <block s="doSetVar">
+              <l>index</l>
+              <l>1</l>
+            </block>
+            <block s="doIf">
+              <block s="reportEquals">
+                <block s="reportStringSize">
+                  <block var="sentence"/>
+                </block>
+                <l>0</l>
+              </block>
+              <script>
+                <block s="doReport">
+                  <block s="reportListItem">
+                    <l>1</l>
+                    <block s="reportJoinWords">
+                      <list>
+                        <l>empty </l>
+                        <l>sentence</l>
+                      </list>
+                    </block>
+                  </block>
+                </block>
+              </script>
+            </block>
+            <block s="doUntil">
+              <block s="reportOr">
+                <block s="reportEquals">
+                  <block var="index"/>
+                  <block s="reportStringSize">
+                    <block var="sentence"/>
+                  </block>
+                </block>
+                <block s="reportNot">
+                  <block s="reportEquals">
+                    <block s="reportLetter">
+                      <block var="index"/>
+                      <block var="sentence"/>
+                    </block>
+                    <l/>
+                  </block>
+                </block>
+              </block>
+              <script>
+                <block s="doChangeVar">
+                  <l>index</l>
+                  <l>1</l>
+                </block>
+              </script>
+            </block>
+            <block s="doIf">
+              <block s="reportEquals">
+                <block s="reportLetter">
+                  <block var="index"/>
+                  <block var="sentence"/>
+                </block>
+                <l/>
+              </block>
+              <script>
+                <block s="doReport">
+                  <block s="reportListItem">
+                    <l>1</l>
+                    <block s="reportJoinWords">
+                      <list>
+                        <l>empty </l>
+                        <l>sentence</l>
+                      </list>
+                    </block>
+                  </block>
+                </block>
+              </script>
+            </block>
+            <block s="doUntil">
+              <block s="reportOr">
+                <block s="reportEquals">
+                  <block var="index"/>
+                  <block s="reportStringSize">
+                    <block var="sentence"/>
+                  </block>
+                </block>
+                <block s="reportEquals">
+                  <block s="reportLetter">
+                    <block var="index"/>
+                    <block var="sentence"/>
+                  </block>
+                  <l/>
+                </block>
+              </block>
+              <script>
+                <block s="doSetVar">
+                  <l>first</l>
+                  <block s="reportJoinWords">
+                    <list>
+                      <block var="first"/>
+                      <block s="reportLetter">
+                        <block var="index"/>
+                        <block var="sentence"/>
+                      </block>
+                    </list>
+                  </block>
+                </block>
+                <block s="doChangeVar">
+                  <l>index</l>
+                  <l>1</l>
+                </block>
+              </script>
+            </block>
+            <block s="doIf">
+              <block s="reportNot">
+                <block s="reportEquals">
+                  <block s="reportLetter">
+                    <block var="index"/>
+                    <block var="sentence"/>
+                  </block>
+                  <l/>
+                </block>
+              </block>
+              <script>
+                <block s="doSetVar">
+                  <l>first</l>
+                  <block s="reportJoinWords">
+                    <list>
+                      <block var="first"/>
+                      <block s="reportLetter">
+                        <block var="index"/>
+                        <block var="sentence"/>
+                      </block>
+                    </list>
+                  </block>
+                </block>
+              </script>
+            </block>
+            <block s="doReport">
+              <block var="first"/>
+            </block>
+          </script>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="last letter of %&apos;word&apos;" type="reporter" category="operators">
+      <comment x="0" y="0" w="260" collapsed="false">Takes a text string as input, and reports the last character in the string.</comment>
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%txt"/>
+      </inputs>
+      <script>
+        <block s="doReport">
+          <block s="reportLetter">
+            <block s="reportStringSize">
+              <block var="word"/>
+            </block>
+            <block var="word"/>
+          </block>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="last word of %&apos;sentence&apos;" type="reporter" category="operators">
+      <comment x="0" y="0" w="262" collapsed="false">Takes a text string as input, divides it into words treating one or more spaces as a word separator (only spaces count; punctuation is part of the word) and reports a text string containing only the last word of the input, with no spaces before or after it.</comment>
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%txt"/>
+      </inputs>
+      <script>
+        <block s="doDeclareVariables">
+          <list>
+            <l>index</l>
+            <l>last</l>
+          </list>
+        </block>
+        <block s="doWarp">
+          <script>
+            <block s="doSetVar">
+              <l>last</l>
+              <l/>
+            </block>
+            <block s="doSetVar">
+              <l>index</l>
+              <block s="reportStringSize">
+                <block var="sentence"/>
+              </block>
+            </block>
+            <block s="doIf">
+              <block s="reportEquals">
+                <block s="reportStringSize">
+                  <block var="sentence"/>
+                </block>
+                <l>0</l>
+              </block>
+              <script>
+                <block s="doReport">
+                  <block s="reportListItem">
+                    <l>1</l>
+                    <block s="reportJoinWords">
+                      <list>
+                        <l>empty </l>
+                        <l>sentence</l>
+                      </list>
+                    </block>
+                  </block>
+                </block>
+              </script>
+            </block>
+            <block s="doUntil">
+              <block s="reportOr">
+                <block s="reportEquals">
+                  <block var="index"/>
+                  <l>1</l>
+                </block>
+                <block s="reportNot">
+                  <block s="reportEquals">
+                    <block s="reportLetter">
+                      <block var="index"/>
+                      <block var="sentence"/>
+                    </block>
+                    <l/>
+                  </block>
+                </block>
+              </block>
+              <script>
+                <block s="doChangeVar">
+                  <l>index</l>
+                  <l>-1</l>
+                </block>
+              </script>
+            </block>
+            <block s="doIf">
+              <block s="reportEquals">
+                <block s="reportLetter">
+                  <block var="index"/>
+                  <block var="sentence"/>
+                </block>
+                <l/>
+              </block>
+              <script>
+                <block s="doReport">
+                  <block s="reportListItem">
+                    <l>1</l>
+                    <block s="reportJoinWords">
+                      <list>
+                        <l>empty </l>
+                        <l>sentence</l>
+                      </list>
+                    </block>
+                  </block>
+                </block>
+              </script>
+            </block>
+            <block s="doUntil">
+              <block s="reportOr">
+                <block s="reportEquals">
+                  <block var="index"/>
+                  <l>1</l>
+                </block>
+                <block s="reportEquals">
+                  <block s="reportLetter">
+                    <block var="index"/>
+                    <block var="sentence"/>
+                  </block>
+                  <l/>
+                </block>
+              </block>
+              <script>
+                <block s="doSetVar">
+                  <l>last</l>
+                  <block s="reportJoinWords">
+                    <list>
+                      <block s="reportLetter">
+                        <block var="index"/>
+                        <block var="sentence"/>
+                      </block>
+                      <block var="last"/>
+                    </list>
+                  </block>
+                </block>
+                <block s="doChangeVar">
+                  <l>index</l>
+                  <l>-1</l>
+                </block>
+              </script>
+            </block>
+            <block s="doIf">
+              <block s="reportNot">
+                <block s="reportEquals">
+                  <block s="reportLetter">
+                    <block var="index"/>
+                    <block var="sentence"/>
+                  </block>
+                  <l/>
+                </block>
+              </block>
+              <script>
+                <block s="doSetVar">
+                  <l>last</l>
+                  <block s="reportJoinWords">
+                    <list>
+                      <block s="reportLetter">
+                        <block var="index"/>
+                        <block var="sentence"/>
+                      </block>
+                      <block var="last"/>
+                    </list>
+                  </block>
+                </block>
+              </script>
+            </block>
+            <block s="doReport">
+              <block var="last"/>
+            </block>
+          </script>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="empty word? %&apos;word&apos;" type="predicate" category="operators">
+      <comment x="0" y="0" w="208" collapsed="false">Takes a text string as input, and reports TRUE if the string has no characters in it of any kind, otherwise false.</comment>
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%txt"/>
+      </inputs>
+      <script>
+        <block s="doReport">
+          <block s="reportEquals">
+            <block s="reportStringSize">
+              <block var="word"/>
+            </block>
+            <l>0</l>
+          </block>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="empty sentence? %&apos;sentence&apos;" type="predicate" category="operators">
+      <comment x="0" y="0" w="221" collapsed="false">Takes a text string as input, and reports TRUE if the input contains no characters other than spaces (therefore, no words when the string is considered as a sentence), otherwise FALSE.</comment>
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%txt"/>
+      </inputs>
+      <script>
+        <block s="doDeclareVariables">
+          <list>
+            <l>index</l>
+          </list>
+        </block>
+        <block s="doSetVar">
+          <l>index</l>
+          <l>1</l>
+        </block>
+        <block s="doIf">
+          <block s="reportEquals">
+            <block s="reportStringSize">
+              <block var="sentence"/>
+            </block>
+            <l>0</l>
+          </block>
+          <script>
+            <block s="doReport">
+              <block s="reportTrue"/>
+            </block>
+          </script>
+        </block>
+        <block s="doUntil">
+          <block s="reportOr">
+            <block s="reportEquals">
+              <block var="index"/>
+              <block s="reportStringSize">
+                <block var="sentence"/>
+              </block>
+            </block>
+            <block s="reportNot">
+              <block s="reportEquals">
+                <block s="reportLetter">
+                  <block var="index"/>
+                  <block var="sentence"/>
+                </block>
+                <l/>
+              </block>
+            </block>
+          </block>
+          <script>
+            <block s="doChangeVar">
+              <l>index</l>
+              <l>1</l>
+            </block>
+          </script>
+        </block>
+        <block s="doReport">
+          <block s="reportEquals">
+            <block s="reportLetter">
+              <block var="index"/>
+              <block var="sentence"/>
+            </block>
+            <l/>
+          </block>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    <block-definition s="word-&gt;list %&apos;text&apos;" type="reporter" category="operators">
+      <comment x="0" y="0" w="160" collapsed="false">Takes a text string as input, and reports a list in which each item is a single character from the string.</comment>
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%s"/>
+      </inputs>
+      <script>
+        <block s="doDeclareVariables">
+          <list>
+            <l>result</l>
+            <l>index</l>
+          </list>
+        </block>
+        <block s="doSetVar">
+          <l>result</l>
+          <block s="reportNewList">
+            <list/>
+          </block>
+        </block>
+        <block s="doSetVar">
+          <l>index</l>
+          <l>1</l>
+        </block>
+        <block s="doUntil">
+          <block s="reportGreaterThan">
+            <block var="index"/>
+            <block s="reportStringSize">
+              <block var="text"/>
+            </block>
+          </block>
+          <script>
+            <block s="doAddToList">
+              <block s="reportLetter">
+                <block var="index"/>
+                <block var="text"/>
+              </block>
+              <block var="result"/>
+            </block>
+            <block s="doChangeVar">
+              <l>index</l>
+              <l>1</l>
+            </block>
+          </script>
+        </block>
+        <block s="doReport">
+          <block var="result"/>
+        </block>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+  </blocks>
+  <variables/>
+</project>
