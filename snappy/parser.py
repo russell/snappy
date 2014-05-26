@@ -32,9 +32,10 @@ def find_closest(state, rstack):
 
 class BaseBlock(object):
 
+    _text_buffer = ''
+
     def __init__(self, parser):
         self.parser = parser
-        self.text = ''
         self.stack = []
         # The state attribute store the contents of the blocks tags.
         # [('tagname', 'attributes', [values, 'and bodies']))]
@@ -153,7 +154,7 @@ class BaseBlock(object):
         data = data.strip()
         if hasattr(self, 'current_tag') and data:
             self.current_tag[2].append(data)
-        self.text = data
+        self._text_buffer = data
 
     def __str__(self):
         return str(codegen.to_source(self.to_ast()))
@@ -210,7 +211,7 @@ class reportNewList(Block):
 
     def leave_l(self):
         super(reportNewList, self).leave_l()
-        self.values.append(literalBlock(self.text))
+        self.values.append(literalBlock(self._text_buffer))
 
     def to_ast(self):
         return ast.List([v.to_ast() for v in self.values], ast.Load())
@@ -225,9 +226,9 @@ class doSetVar(Block):
     def leave_l(self):
         super(doSetVar, self).leave_l()
         if not self.variable:
-            self.variable = self.text
+            self.variable = self._text_buffer
         elif not self.value:
-            self.value = literalBlock(self.text)
+            self.value = literalBlock(self._text_buffer)
 
     def enter_block(self, name, qname, attributes):
         block = super(doSetVar, self).enter_block(name, qname, attributes)
@@ -246,7 +247,7 @@ class doDeclareVariables(Block):
 
     def leave_l(self):
         super(doDeclareVariables, self).leave_l()
-        self.variables.append(self.text)
+        self.variables.append(self._text_buffer)
 
     def to_ast(self):
         names = ast.Tuple([ast.Name(var, ast.Load())
