@@ -20,6 +20,7 @@ setup(name='snappy',
       install_requires=[
           'lxml',
           'mock',
+          'codegen',
       ],
       entry_points="""
       # -*- Entry points: -*-
