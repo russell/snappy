@@ -17,9 +17,11 @@ class Block(object):
         self.text = ''
 
     def pushParser(self, parser):
+        """Push a block parser onto the parser stack."""
         return self.parser.pushParser(parser)
 
     def popParser(self):
+        """Pop a block parser from the parser stack."""
         return self.parser.popParser()
 
     def enter_block(self, name, qname, attributes):
@@ -51,6 +53,7 @@ class Block(object):
 
 
 class namedBlock(Block):
+
     def __init__(self, parser, name):
         super(namedBlock, self).__init__(parser)
         self.name = name
@@ -119,6 +122,7 @@ class doSetVar(Block):
 
 
 class doDeclareVariables(Block):
+
     def __init__(self, parser):
         super(doDeclareVariables, self).__init__(parser)
         self.variables = []
@@ -292,6 +296,7 @@ def leave(object, name):
 
 
 class BlockParser(ContentHandler):
+
     def __init__(self):
         self.name = ''
         self.app = ''

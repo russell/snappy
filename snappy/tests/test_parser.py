@@ -128,6 +128,6 @@ class TestBlockParser(unittest.TestCase):
     def setUp(self):
         super(TestBlockParser, self).setUp()
 
-    def test_if_else(self):
+    def test_wh_words(self):
         filename = path.join(SAMPLE_PROGRAMS, 'wh_words.xml')
         p = parser.parse(filename)
