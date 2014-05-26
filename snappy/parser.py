@@ -9,12 +9,14 @@ from xml.sax.handler import ContentHandler
 LOG = logging.getLogger(__name__)
 
 
-class Block(object):
-    _entered_block = False
+class BaseBlock(object):
 
     def __init__(self, parser):
         self.parser = parser
         self.text = ''
+
+    def setup(self, name, qname, attributes):
+        pass
 
     def pushParser(self, parser):
         """Push a block parser onto the parser stack."""
@@ -22,28 +24,59 @@ class Block(object):
 
     def popParser(self):
         """Pop a block parser from the parser stack."""
-        return self.parser.popParser()
+        popped = self.parser.popParser()
+        return popped
+
+    def registerCustomBlock(self, block):
+        return self.parser.registerCustomBlock(block)
 
     def enter_block(self, name, qname, attributes):
         # Handle expressions
         fn = (attributes.getValueByQName('s')
               if attributes.has_key((None, 's')) else '')
-        if fn == self.__class__.__name__:
-            self._entered_block = True
-            return
-        if fn in builtin_parsers:
-            block_parser = builtin_parsers[fn](self)
+        if fn:
+            block_parser = builtin_parsers.get(fn, NotImplementedBlock)(self)
+            block_parser.setup(name, qname, attributes)
             return self.pushParser(block_parser)
 
         # Handle variables
         var = (attributes.getValueByQName('var')
               if attributes.has_key((None, 'var')) else '')
         if var:
-            block_parser = namedBlock(self, var)
+            block_parser = namedBlock(self)
+            block_parser.setup(name, qname, attributes)
             return self.pushParser(block_parser)
 
     def leave_block(self):
-        return self.popParser()
+        parser = self.popParser()
+        assert issubclass(parser.__class__, Block), parser.__class__.__name__
+        return parser
+
+    def enter_script(self, name, qname, attributes):
+        parser = self.pushParser(Script(self))
+        parser.setup(name, qname, attributes)
+
+    def leave_script(self):
+        parser = self.popParser()
+        assert parser.__class__.__name__ == 'Script', parser.__class__.__name__
+        return parser
+
+    def enter_block_definition(self, name, qname, attributes):
+        raise Exception("Should not be defining custom blocks from within a block.")
+
+    def enter_custom_block(self, name, qname, attributes):
+        parser = self.pushParser(CustomBlock(self))
+        parser.setup(name, qname, attributes)
+
+    def leave_custom_block(self):
+        parser = self.popParser()
+        assert parser.__class__.__name__ == 'CustomBlock', parser.__class__.__name__
+        return parser
+
+    def leave_block_definition(self):
+        parser = self.popParser()
+        assert parser.__class__.__name__ == 'BlockDefinition', parser.__class__.__name__
+        return parser
 
     def characters(self, data):
         self.text = data
@@ -52,11 +85,19 @@ class Block(object):
         return str(codegen.to_source(self.to_ast()))
 
 
+class Block(BaseBlock):
+    pass
+
+
+class NotImplementedBlock(Block):
+    pass
+
+
 class namedBlock(Block):
 
-    def __init__(self, parser, name):
-        super(namedBlock, self).__init__(parser)
-        self.name = name
+    def setup(self, name, qname, attributes):
+        var = attributes.getValueByQName('var')
+        self.name = var
 
     def to_ast(self):
         return ast.Name(self.name, ast.Load())
@@ -64,6 +105,8 @@ class namedBlock(Block):
 
 class literalBlock(Block):
 
+    # TODO this has an inconsistent calling convention.  is there a
+    # way to use the enter_block method to parse the value?
     def __init__(self, value):
         self.value = value
 
@@ -112,8 +155,6 @@ class doSetVar(Block):
 
     def enter_block(self, name, qname, attributes):
         block = super(doSetVar, self).enter_block(name, qname, attributes)
-        if not block:
-            return
         self.value = block
 
     def to_ast(self):
@@ -156,14 +197,10 @@ class doIf(Block):
             return 'test'
         elif not self.expr1:
             return 'expr1'
-        print self.__dict__
-        print self.test.__dict__
         raise Exception("Lost position in if statement")
 
     def enter_block(self, name, qname, attributes):
         block = super(doIf, self).enter_block(name, qname, attributes)
-        if not block:
-            return
         part = self.next_part()
         if isinstance(getattr(self, part), list):
             getattr(self, part).append(block)
@@ -186,6 +223,7 @@ class doIf(Block):
         self.current_part = None
 
     def leave_block(self):
+        super(doIf, self).leave_block()
         if not self.test:
             self.test = reportTrue(self)
         if not self.expr1:
@@ -196,6 +234,47 @@ class doIf(Block):
                      [e.to_ast() for e in self.expr1],
                      [])
         return _if
+
+
+class Script(BaseBlock):
+    def __init__(self, parser):
+        super(Script, self).__init__(parser)
+        self.exprs = []
+
+    def enter_block(self, name, qname, attributes):
+        block = super(Script, self).enter_block(name, qname, attributes)
+        self.exprs.append(block)
+        return block
+
+    def to_ast(self):
+        return [e.to_ast() for e in self.exprs]
+
+
+class BlockDefinition(BaseBlock):
+    name = None
+    type = None
+    category = None
+    script = None
+
+    def setup(self, name, qname, attributes):
+        self.name = attributes.getValueByQName('s')
+        self.type = attributes.getValueByQName('type')
+        self.category = attributes.getValueByQName('category')
+
+    def enter_script(self, name, qname, attributes):
+        parser = self.pushParser(Script(self))
+        parser.setup(name, qname, attributes)
+
+
+class CustomBlock(BaseBlock):
+    name = None
+
+    def setup(self, name, qname, attributes):
+        self.name = attributes.getValueByQName('s')
+
+    def to_ast(self):
+        return self.lookupCustomBlock(self.name)
+
 
 builtin_parsers = {
     # Reports
@@ -302,6 +381,8 @@ class BlockParser(ContentHandler):
         self.app = ''
         self.version = ''
         self.parser_stack = []
+        self.scripts = []
+        self.custom_blocks = {}
 
     def getParser(self):
         for parser in reversed(self.parser_stack):
@@ -315,7 +396,15 @@ class BlockParser(ContentHandler):
         return parser
 
     def popParser(self):
-        return self.parser_stack.pop()
+        popped = self.parser_stack.pop()
+        return popped
+
+    def registerCustomBlock(self, block):
+        self.custom_blocks[block.name] = block
+        return block
+
+    def lookupCustomBlock(self, name):
+        return self.custom_blocks[name]
 
     def startElementNS(self, name, qname, attributes):
         qname = qname.replace('-', '_')
@@ -335,40 +424,26 @@ class BlockParser(ContentHandler):
         self.version = attributes.getValueByQName('version')
 
     def enter_scripts(self, name, qname, attributes):
-        # The main functions
-        print 'block', qname
+        # Collection of custom scripts
+        pass
+
+    def enter_script(self, name, qname, attributes):
+        parser = self.pushParser(Script(self))
+        # Register top level scripts
+        self.scripts.append(parser)
+        return parser.setup(name, qname, attributes)
 
     def enter_blocks(self, name, qname, attributes):
         # Collection of custom blocks
         pass
 
     def enter_block_definition(self, name, qname, attributes):
-        # Define custom block
-        # print 'block', qname
-        pass
-
-    def enter_block(self, name, qname, attributes):
-        self.parser_stack.append(name)
-        # Call builtin
-        fn = (attributes.getValueByQName('s')
-              if attributes.has_key((None, 's')) else '')
-        if fn in builtin_parsers:
-            self.parser_stack.append(builtin_parsers[fn](self))
-        else:
-            self.parser_stack.append(qname)
-
-        if attributes.has_key('var'):
-            # Return a variable?
-            pass
-
-    def leave_block(self):
-        pass
+        parser = self.pushParser(BlockDefinition(self))
+        return parser.setup(name, qname, attributes)
 
     def enter_custom_block(self, name, qname, attributes):
-        # Call function or is this like a macro?
-        # print 'block', qname
-        # print attributes.getValueByQName('s')
-        pass
+        parser = self.pushParser(CustomBlock(self))
+        return parser.setup(name, qname, attributes)
 
 
 def parse(filename):
