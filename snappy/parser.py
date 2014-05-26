@@ -1,5 +1,6 @@
 import ast
 import codegen
+import copy
 
 import lxml.etree
 import lxml.sax
@@ -8,15 +9,62 @@ from xml.sax.handler import ContentHandler
 
 LOG = logging.getLogger(__name__)
 
+NAME = 0
+LAST = -1
+ATTRIBUTES = 1
+CHILDREN = 2
+
+
+def find_closest(state, rstack):
+    if state:
+        if isinstance(state[LAST], tuple) and state[LAST][NAME] == rstack[NAME]:
+            rstack = rstack[1:]
+            if rstack:
+                state = state[LAST][CHILDREN]
+                return find_closest(state, rstack)
+            else:
+                return state[LAST], rstack
+        else:
+            return state, rstack
+    else:
+        return state, rstack
+
 
 class BaseBlock(object):
 
     def __init__(self, parser):
         self.parser = parser
         self.text = ''
+        self.stack = []
+        # The state attribute store the contents of the blocks tags.
+        # [('tagname', 'attributes', [values, 'and bodies']))]
+        self.state = []
 
     def setup(self, name, qname, attributes):
-        pass
+        self.stack = [qname]
+        self.current_tag = (qname, attributes.items(), [])
+        self.state = [self.current_tag]
+        return self
+
+    def pushObject(self, object):
+        self.current_tag[CHILDREN].append(object)
+
+    def pushT(self, tag, name, qname, attributes):
+        self.stack.append(tag)
+        self.current_tag = (qname, attributes.items(), [])
+        state, stack = find_closest(self.state, copy.copy(self.stack))
+        if stack:
+            state.append(self.current_tag)
+        else:
+            state[CHILDREN].append(self.current_tag)
+        return tag
+
+    def popT(self, tag=None):
+        tag1 = self.stack.pop()
+        # TODO: currently doesn't assert tags that are objects
+        if tag:
+            assert tag == tag1, "Tag stack mismatch %r != %r" % (tag, tag1)
+        return tag
 
     def pushParser(self, parser):
         """Push a block parser onto the parser stack."""
@@ -37,6 +85,7 @@ class BaseBlock(object):
         if fn:
             block_parser = builtin_parsers.get(fn, NotImplementedBlock)(self)
             block_parser.setup(name, qname, attributes)
+            self.pushObject(block_parser)
             return self.pushParser(block_parser)
 
         # Handle variables
@@ -45,6 +94,7 @@ class BaseBlock(object):
         if var:
             block_parser = namedBlock(self)
             block_parser.setup(name, qname, attributes)
+            self.pushObject(block_parser)
             return self.pushParser(block_parser)
 
     def leave_block(self):
@@ -55,6 +105,7 @@ class BaseBlock(object):
     def enter_script(self, name, qname, attributes):
         parser = self.pushParser(Script(self))
         parser.setup(name, qname, attributes)
+        self.pushObject(parser)
 
     def leave_script(self):
         parser = self.popParser()
@@ -64,21 +115,44 @@ class BaseBlock(object):
     def enter_block_definition(self, name, qname, attributes):
         raise Exception("Should not be defining custom blocks from within a block.")
 
+    def leave_block_definition(self):
+        parser = self.popParser()
+        assert parser.__class__.__name__ == 'BlockDefinition', parser.__class__.__name__
+        return parser
+
     def enter_custom_block(self, name, qname, attributes):
         parser = self.pushParser(CustomBlock(self))
         parser.setup(name, qname, attributes)
+        self.pushObject(parser)
 
     def leave_custom_block(self):
         parser = self.popParser()
         assert parser.__class__.__name__ == 'CustomBlock', parser.__class__.__name__
         return parser
 
-    def leave_block_definition(self):
-        parser = self.popParser()
-        assert parser.__class__.__name__ == 'BlockDefinition', parser.__class__.__name__
-        return parser
+    # Tags
+    def enter_l(self, name, qname, attributes):
+        self.pushT('l', name, qname, attributes)
+
+    def leave_l(self):
+        self.popT('l')
+
+    def enter_list(self, name, qname, attributes):
+        self.pushT('list', name, qname, attributes)
+
+    def leave_list(self):
+        self.popT('list')
+
+    def enter_option(self, name, qname, attributes):
+        self.pushT('option', name, qname, attributes)
+
+    def leave_option(self):
+        self.popT('option')
 
     def characters(self, data):
+        data = data.strip()
+        if hasattr(self, 'current_tag') and data:
+            self.current_tag[2].append(data)
         self.text = data
 
     def __str__(self):
@@ -135,6 +209,7 @@ class reportNewList(Block):
         self.values = []
 
     def leave_l(self):
+        super(reportNewList, self).leave_l()
         self.values.append(literalBlock(self.text))
 
     def to_ast(self):
@@ -148,6 +223,7 @@ class doSetVar(Block):
         self.value = None
 
     def leave_l(self):
+        super(doSetVar, self).leave_l()
         if not self.variable:
             self.variable = self.text
         elif not self.value:
@@ -169,6 +245,7 @@ class doDeclareVariables(Block):
         self.variables = []
 
     def leave_l(self):
+        super(doDeclareVariables, self).leave_l()
         self.variables.append(self.text)
 
     def to_ast(self):
@@ -210,6 +287,7 @@ class doIf(Block):
     def leave_l(self):
         # The default case, this is when there is no value for the
         # test.
+        super(doIf, self).leave_l('l')
         if self.test is None:
             self.test = ast.Name('False', ast.Load())
 
@@ -270,6 +348,7 @@ class CustomBlock(BaseBlock):
     name = None
 
     def setup(self, name, qname, attributes):
+        super(CustomBlock, self).setup(name, qname, attributes)
         self.name = attributes.getValueByQName('s')
 
     def to_ast(self):

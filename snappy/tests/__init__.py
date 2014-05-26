@@ -14,6 +14,7 @@ class BlockParser():
     def test_parse(self):
         parser = snap_parser.BlockParser()
         block_parser = snap_parser.Script(parser)
+        block_parser.setup(None, 'script', {})
         parser.pushParser(block_parser)
         tree = lxml.etree.parse(StringIO(self.xml))
         lxml.sax.saxify(tree, parser)
