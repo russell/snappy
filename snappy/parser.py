@@ -195,15 +195,75 @@ class doIf(Block):
 
 builtin_parsers = {
     # Reports
-    'reportTrue': reportTrue,
-    'reportNewList': reportNewList,
 
-    # Variables
-    'doSetVar': doSetVar,
-    'doDeclareVariables': doDeclareVariables,
-
-    # Controls
+    # Control
+    # 'doWait': doWait,
+    # 'doForever': doForever,
+    # 'doRepeat': doRepeat,
+    # 'doBroadcast': doBroadcast,
+    # 'doBroadcastAndWait': doBroadcastAndWait,
     'doIf': doIf,
+    # 'doIfElse': doIfElse,
+    # 'doWaitUntil': doWaitUntil,
+    # 'doUntil': doUntil,
+    # 'doStop': doStop,
+    # 'doStopAll': doStopAll,
+    # NOTE: there are 3 forms of this in snap
+    # 'doRun': doRun,
+    # NOTE: there are 3 forms of this in snap
+    # 'fork': fork,
+    # NOTE: there are 3 forms of this in snap
+    # 'evaluate': evaluate,
+    # 'doReport': doReport,
+    # 'doStopBlock': doStopBlock,
+
+    #
+    # Operators
+    #
+    # 'reportSum': reportSum,  # +
+    # 'reportDifference': reportDifference,  # -
+    # 'reportProduct': reportProduct,  # *
+    # 'reportQuotient': reportQuotient,  # /
+    # 'reportRandom': reportRandom,  # randomFrom:to:
+    # 'reportLessThan': reportLessThan,  # <
+    # 'reportEquals': reportEquals,  # =
+    # 'reportGreaterThan': reportGreaterThan,  # >
+    # 'reportAnd': reportAnd,  # &
+    # 'reportOr': reportOr,  # |
+    # 'reportNot': reportNot,  # not
+    'reportTrue': reportTrue,  # getTrue
+    # 'reportFalse': reportFalse,  # getFalse
+    # 'reportJoinWords': reportJoinWords,  # concatenate:with:
+    # 'reportLetter': reportLetter,  # letter:of:
+    # 'reportStringSize': reportStringSize,  # stringLength:
+    # 'reportUnicode': reportUnicode,  # asciiCodeOf
+    # 'reportUnicodeAsLetter': 'reportUnicodeAsLetter',  # asciiLetter
+    # 'reportModulus': reportModulus,  # \\\\
+    # 'reportRound': reportRound,  # rounded
+    # 'reportMonadic': reportMonadic,  # computeFunction:of:
+    # 'reportIsA': reportIsA,  # isObject:type:
+
+    #
+    # Variables
+    #
+    'doSetVar': doSetVar,
+    # 'doChangeVar': doChangeVar,
+    # 'doShowVar': doShowVar,
+    # 'doHideVar': doHideVar,
+    'doDeclareVariables': doDeclareVariables,
+    'reportNewList': reportNewList,
+    # 'doAddToList': doAddToList,
+    # 'doDeleteFromList': doDeleteFromList,
+    # 'doInsertInList': doInsertInList,
+    # 'doReplaceInList': doReplaceInList,
+    # 'reportListItem': reportListItem,
+    # 'reportListLength': reportListLength,
+    # 'reportListContainsItem': reportListContainsItem,
+
+    #
+    # Kludge
+    #
+    # 'doWarp': doWarp
 }
 
 
