@@ -132,3 +132,4 @@ class TestBlockParser(unittest.TestCase):
         filename = path.join(SAMPLE_PROGRAMS, 'wh_words.xml')
         p = parser.parse(filename)
         self.assertTrue(len(p.scripts) == 2, p.scripts)
+        self.assertTrue(len(p.custom_blocks) == 29, p.custom_blocks)

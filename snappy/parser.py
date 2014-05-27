@@ -9,18 +9,15 @@ from xml.sax.handler import ContentHandler
 
 LOG = logging.getLogger(__name__)
 
-NAME = 0
 LAST = -1
-ATTRIBUTES = 1
-CHILDREN = 2
 
 
 def find_closest(state, rstack):
-    if state:
-        if isinstance(state[LAST], tuple) and state[LAST][NAME] == rstack[NAME]:
+    if state and rstack:
+        if state[LAST].name == rstack[0]:
             rstack = rstack[1:]
             if rstack:
-                state = state[LAST][CHILDREN]
+                state = state[LAST].children
                 return find_closest(state, rstack)
             else:
                 return state[LAST], rstack
@@ -30,134 +27,59 @@ def find_closest(state, rstack):
         return state, rstack
 
 
-class BaseBlock(object):
+def find_first(node, rstack):
+    """Traverse the nodes and find the first node that
+    matches the context listed in rstack."""
+    node_name = rstack[0]
+    remainder = rstack[1:]
+    for child in node.children:
+        if child.name == node_name:
+            if remainder:
+                return find_first(child, remainder)
+            return child
 
-    _text_buffer = ''
 
-    def __init__(self, parser):
-        self.parser = parser
-        self.stack = []
-        # The state attribute store the contents of the blocks tags.
-        # [('tagname', 'attributes', [values, 'and bodies']))]
-        self.state = []
+class Tag(object):
 
-    def setup(self, name, qname, attributes):
-        self.stack = [qname]
-        self.current_tag = (qname, attributes.items(), [])
-        self.state = [self.current_tag]
-        return self
+    def __init__(self, name, qname, attributes):
+        self.name = qname
+        self.attributes = attributes
+        self.children = []
 
-    def pushObject(self, object):
-        self.current_tag[CHILDREN].append(object)
+    def __getitem__(self, item):
+        return self.children.__getitem__(item)
 
-    def pushT(self, tag, name, qname, attributes):
-        self.stack.append(tag)
-        self.current_tag = (qname, attributes.items(), [])
-        state, stack = find_closest(self.state, copy.copy(self.stack))
-        if stack:
-            state.append(self.current_tag)
-        else:
-            state[CHILDREN].append(self.current_tag)
-        return tag
+    @property
+    def text(self):
+        """Return all the text children as a string"""
+        return ''.join([child for child in self.children
+                        if isinstance(child, (str, unicode))])
 
-    def popT(self, tag=None):
-        tag1 = self.stack.pop()
-        # TODO: currently doesn't assert tags that are objects
-        if tag:
-            assert tag == tag1, "Tag stack mismatch %r != %r" % (tag, tag1)
-        return tag
-
-    def pushParser(self, parser):
-        """Push a block parser onto the parser stack."""
-        return self.parser.pushParser(parser)
-
-    def popParser(self):
-        """Pop a block parser from the parser stack."""
-        popped = self.parser.popParser()
-        return popped
-
-    def registerCustomBlock(self, block):
-        return self.parser.registerCustomBlock(block)
-
-    def enter_block(self, name, qname, attributes):
-        # Handle expressions
-        fn = (attributes.getValueByQName('s')
-              if attributes.has_key((None, 's')) else '')
-        if fn:
-            block_parser = builtin_parsers.get(fn, NotImplementedBlock)(self)
-            block_parser.setup(name, qname, attributes)
-            self.pushObject(block_parser)
-            return self.pushParser(block_parser)
-
-        # Handle variables
-        var = (attributes.getValueByQName('var')
-              if attributes.has_key((None, 'var')) else '')
-        if var:
-            block_parser = namedBlock(self)
-            block_parser.setup(name, qname, attributes)
-            self.pushObject(block_parser)
-            return self.pushParser(block_parser)
-
-    def leave_block(self):
-        parser = self.popParser()
-        assert issubclass(parser.__class__, Block), parser.__class__.__name__
-        return parser
-
-    def enter_script(self, name, qname, attributes):
-        parser = self.pushParser(Script(self))
-        parser.setup(name, qname, attributes)
-        self.pushObject(parser)
-
-    def leave_script(self):
-        parser = self.popParser()
-        assert parser.__class__.__name__ == 'Script', parser.__class__.__name__
-        return parser
-
-    def enter_block_definition(self, name, qname, attributes):
-        raise Exception("Should not be defining custom blocks from within a block.")
-
-    def leave_block_definition(self):
-        parser = self.popParser()
-        assert parser.__class__.__name__ == 'BlockDefinition', parser.__class__.__name__
-        return parser
-
-    def enter_custom_block(self, name, qname, attributes):
-        parser = self.pushParser(CustomBlock(self))
-        parser.setup(name, qname, attributes)
-        self.pushObject(parser)
-
-    def leave_custom_block(self):
-        parser = self.popParser()
-        assert parser.__class__.__name__ == 'CustomBlock', parser.__class__.__name__
-        return parser
-
-    # Tags
-    def enter_l(self, name, qname, attributes):
-        self.pushT('l', name, qname, attributes)
-
-    def leave_l(self):
-        self.popT('l')
-
-    def enter_list(self, name, qname, attributes):
-        self.pushT('list', name, qname, attributes)
-
-    def leave_list(self):
-        self.popT('list')
-
-    def enter_option(self, name, qname, attributes):
-        self.pushT('option', name, qname, attributes)
-
-    def leave_option(self):
-        self.popT('option')
-
-    def characters(self, data):
-        data = data.strip()
-        if hasattr(self, 'current_tag') and data:
-            self.current_tag[2].append(data)
-        self._text_buffer = data
+    def __repr__(self):
+        return "<Tag name='%s' %s>" % (self.name, self.attributes)
 
     def __str__(self):
+        return self.text
+
+
+class BaseBlock(Tag):
+
+    def __init__(self, name, qname, attributes):
+        super(BaseBlock, self).__init__(name, qname, attributes)
+        self.block_name = self.__class__.__name__
+        self.stack = []
+
+    def find_child(self, path):
+        state, remainder = find_closest(self.children, path)
+        if remainder:
+            raise Exception("Couldn't find element")
+        return state
+
+    def to_python(self):
         return str(codegen.to_source(self.to_ast()))
+
+    def __repr__(self):
+        return "<Block name='%s' %s>" % (self.block_name, self.attributes)
 
 
 class Block(BaseBlock):
@@ -168,195 +90,138 @@ class NotImplementedBlock(Block):
     pass
 
 
-class namedBlock(Block):
+class NamedBlock(Block):
 
     def setup(self, name, qname, attributes):
-        var = attributes.getValueByQName('var')
-        self.name = var
+        super(NamedBlock, self).setup(name, qname, attributes)
+        var = attributes['var']
+        self.block_name = var
 
     def to_ast(self):
-        return ast.Name(self.name, ast.Load())
+        return ast.Name(self.block_name, ast.Load())
 
 
-class literalBlock(Block):
-
-    # TODO this has an inconsistent calling convention.  is there a
-    # way to use the enter_block method to parse the value?
-    def __init__(self, value):
-        self.value = value
+class LiteralBlock(Tag):
 
     def to_ast(self):
         try:
-            value = ast.Num(int(self.value))
+            value = ast.Num(int(self.text))
         except:
-            value = ast.Str(self.value)
+            value = ast.Str(self.text)
+        return value
+
+    def to_name(self):
+        value = ast.Name(self.text, ast.Load())
         return value
 
 
-class passBlock(Block):
+class PassBlock(Block):
+
+    # TODO this block has an inconsistent definition because it's not
+    # called directly by the parser.  This should probably be changed.
+    def __init__(self):
+        self.name = "Pass"
+        self.attributes = {}
+        self.children = []
+
     def to_ast(self):
         return ast.Expr([ast.Name('Pass', ast.Load())])
 
 
 class reportTrue(Block):
+
     def to_ast(self):
         # NOTE needs to be wrapped it a ast.Expr([]) in some cases.
         return ast.Name('True', ast.Load())
 
 
 class reportNewList(Block):
-    def __init__(self, parser):
-        super(reportNewList, self).__init__(parser)
-        self.values = []
-
-    def leave_l(self):
-        super(reportNewList, self).leave_l()
-        self.values.append(literalBlock(self._text_buffer))
 
     def to_ast(self):
-        return ast.List([v.to_ast() for v in self.values], ast.Load())
+        variables = self.find_child(['list'])
+        return ast.List([v.to_ast() for v in variables.children], ast.Load())
 
 
 class doSetVar(Block):
-    def __init__(self, parser):
-        super(doSetVar, self).__init__(parser)
-        self.variable = None
-        self.value = None
-
-    def leave_l(self):
-        super(doSetVar, self).leave_l()
-        if not self.variable:
-            self.variable = self._text_buffer
-        elif not self.value:
-            self.value = literalBlock(self._text_buffer)
-
-    def enter_block(self, name, qname, attributes):
-        block = super(doSetVar, self).enter_block(name, qname, attributes)
-        self.value = block
 
     def to_ast(self):
-        name = [ast.Name(self.variable, ast.Load())]
-        return ast.Assign(name, self.value.to_ast())
+        name = [self.children[0].to_name()]
+        return ast.Assign(name, self.children[1].to_ast())
 
 
 class doDeclareVariables(Block):
 
-    def __init__(self, parser):
-        super(doDeclareVariables, self).__init__(parser)
-        self.variables = []
-
-    def leave_l(self):
-        super(doDeclareVariables, self).leave_l()
-        self.variables.append(self._text_buffer)
-
     def to_ast(self):
-        names = ast.Tuple([ast.Name(var, ast.Load())
-                          for var in self.variables],
+        variables = self.find_child(['list'])
+        names = ast.Tuple([ast.Name(var.text, ast.Load())
+                          for var in variables],
                           ast.Load())
         values = ast.Tuple([ast.Name('None', ast.Load())
-                            for var in self.variables],
+                            for var in variables],
                            ast.Load())
         assign = ast.Assign([names], values)
         return assign
 
 
 class doIf(Block):
-    current_part = None
-
-    def __init__(self, parser):
-        super(doIf, self).__init__(parser)
-        self.test = None
-        self.expr1 = []
-
-    def next_part(self):
-        if self.current_part:
-            return self.current_part
-        if not self.test:
-            return 'test'
-        elif not self.expr1:
-            return 'expr1'
-        raise Exception("Lost position in if statement")
-
-    def enter_block(self, name, qname, attributes):
-        block = super(doIf, self).enter_block(name, qname, attributes)
-        part = self.next_part()
-        if isinstance(getattr(self, part), list):
-            getattr(self, part).append(block)
-        else:
-            setattr(self, part, block)
-
-    def leave_l(self):
-        # The default case, this is when there is no value for the
-        # test.
-        super(doIf, self).leave_l('l')
-        if self.test is None:
-            self.test = ast.Name('False', ast.Load())
-
-    def enter_script(self, name, qname, attributes):
-        # Parse multiple blocks
-        part = self.next_part()
-        self.current_part = part
-        setattr(self, part, [])
-
-    def leave_script(self):
-        self.current_part = None
-
-    def leave_block(self):
-        super(doIf, self).leave_block()
-        if not self.test:
-            self.test = reportTrue(self)
-        if not self.expr1:
-            self.expr1 = [passBlock(self)]
 
     def to_ast(self):
-        _if = ast.If(self.test.to_ast(),
-                     [e.to_ast() for e in self.expr1],
+        _if = ast.If(self.children[0].to_ast(),
+                     self.children[1].to_ast(),
                      [])
         return _if
 
 
 class Script(BaseBlock):
-    def __init__(self, parser):
-        super(Script, self).__init__(parser)
-        self.exprs = []
-
-    def enter_block(self, name, qname, attributes):
-        block = super(Script, self).enter_block(name, qname, attributes)
-        self.exprs.append(block)
-        return block
 
     def to_ast(self):
-        return [e.to_ast() for e in self.exprs]
+        return [e.to_ast() for e in self.children or [PassBlock()]]
 
 
 class BlockDefinition(BaseBlock):
-    name = None
-    type = None
-    category = None
-    script = None
 
-    def setup(self, name, qname, attributes):
-        self.name = attributes.getValueByQName('s')
-        self.type = attributes.getValueByQName('type')
-        self.category = attributes.getValueByQName('category')
-
-    def enter_script(self, name, qname, attributes):
-        parser = self.pushParser(Script(self))
-        parser.setup(name, qname, attributes)
+    def __init__(self, name, qname, attributes):
+        super(BlockDefinition, self).__init__(name, qname, attributes)
+        self.block_name = attributes['s']
+        self.type = attributes['type']
+        self.category = attributes['category']
 
 
 class CustomBlock(BaseBlock):
-    name = None
 
-    def setup(self, name, qname, attributes):
-        super(CustomBlock, self).setup(name, qname, attributes)
-        self.name = attributes.getValueByQName('s')
+    def __init__(self, name, qname, attributes):
+        super(CustomBlock, self).__init__(name, qname, attributes)
+        self.block_name = attributes['s']
 
     def to_ast(self):
-        return self.lookupCustomBlock(self.name)
+        return self.lookupCustomBlock(self.block_name)
 
 
-builtin_parsers = {
+def block_handler(name, qname, attributes):
+    # Handle expressions
+    fn = attributes.get('s')
+    if fn:
+        block_parser = builtin_blocks.get(fn, NotImplementedBlock)(name, qname, attributes)
+        return block_parser
+
+    # Handle variables
+    var = attributes.get('var')
+    if var:
+        block_parser = NamedBlock(name, qname, attributes)
+        return block_parser
+    raise Exception('Unknown block type.')
+
+
+tag_parsers = {
+    'l': LiteralBlock,
+    'list': Tag,
+    'script': Script,
+    'block': block_handler,
+    'custom-block': CustomBlock,
+    'block-definition': BlockDefinition,
+}
+
+builtin_blocks = {
     # Reports
 
     # Control
@@ -430,100 +295,75 @@ builtin_parsers = {
 }
 
 
-def enter_noop(name, qname, attributes):
-    pass
-
-
-def leave_noop():
-    pass
-
-
-def enter(object, name):
-    if hasattr(object, 'enter_' + name):
-        return getattr(object, 'enter_' + name)
-    else:
-        LOG.debug("Unparsable element %s", name)
-        return enter_noop
-
-
-def leave(object, name):
-    if hasattr(object, 'leave_' + name):
-        return getattr(object, 'leave_' + name)
-    else:
-        LOG.debug("Unparsable element %s", name)
-        return leave_noop
-
-
 class BlockParser(ContentHandler):
 
     def __init__(self):
         self.name = ''
         self.app = ''
         self.version = ''
-        self.parser_stack = []
-        self.scripts = []
-        self.custom_blocks = {}
-
-    def getParser(self):
-        for parser in reversed(self.parser_stack):
-            if isinstance(parser, (str, tuple)):
-                continue
-            return parser
-        return self
-
-    def pushParser(self, parser):
-        self.parser_stack.append(parser)
-        return parser
-
-    def popParser(self):
-        popped = self.parser_stack.pop()
-        return popped
-
-    def registerCustomBlock(self, block):
-        self.custom_blocks[block.name] = block
-        return block
+        self.stack = []
+        self._custom_blocks = None
+        self.children = []
 
     def lookupCustomBlock(self, name):
         return self.custom_blocks[name]
 
+    def pushT(self, tag):
+        self.current_tag = tag
+        state, stack = find_closest(self.children, copy.copy(self.stack))
+        self.stack.append(tag.name)
+        if len(self.stack) == 1:
+            self.children.append(self.current_tag)
+        else:
+            state.children.append(self.current_tag)
+        return tag
+
+    def popT(self, tag=None):
+        tag1 = self.stack.pop()
+        if tag:
+            if isinstance(tag, (str, unicode)):
+                name = tag
+            else:
+                name = tag.name
+            if issubclass(tag1.__class__, Block):
+                tag1 = 'block'
+            assert name == tag1, "Tag stack mismatch %r != %r" % (tag, tag1)
+        return tag
+
     def startElementNS(self, name, qname, attributes):
-        qname = qname.replace('-', '_')
-        enter(self.getParser(), qname)(name, qname, attributes)
+        attributes = dict([(attributes.getQNameByName(k), v)
+                           for k, v in attributes.items()])
+        tag = tag_parsers.get(qname, Tag)(name, qname, attributes)
+        self.pushT(tag)
+        return tag
 
     def endElementNS(self, name, qname):
-        qname = qname.replace('-', '_')
-        leave(self.getParser(), qname)()
+        if self.stack:
+            self.popT(qname)
 
     def characters(self, data):
-        if self.getParser() != self:
-            self.getParser().characters(data)
+        data = data.strip()
+        if hasattr(self, 'current_tag') and data:
+            self.current_tag.children.append(data)
 
-    def enter_project(self, name, qname, attributes):
-        self.name = attributes.getValueByQName('name')
-        self.app = attributes.getValueByQName('app')
-        self.version = attributes.getValueByQName('version')
+    @property
+    def scripts(self):
+        scripts = find_first(self, ['project', 'stage', 'sprites',
+                                    'sprite', 'scripts'])
+        if scripts:
+            return scripts.children
+        return []
 
-    def enter_scripts(self, name, qname, attributes):
-        # Collection of custom scripts
-        pass
-
-    def enter_script(self, name, qname, attributes):
-        parser = self.pushParser(Script(self))
-        # Register top level scripts
-        self.scripts.append(parser)
-        return parser.setup(name, qname, attributes)
-
-    def enter_blocks(self, name, qname, attributes):
-        # Collection of custom blocks
-        pass
-
-    def enter_block_definition(self, name, qname, attributes):
-        parser = self.pushParser(BlockDefinition(self))
-        return parser.setup(name, qname, attributes)
-
-    def enter_custom_block(self, name, qname, attributes):
-        parser = self.pushParser(CustomBlock(self))
-        return parser.setup(name, qname, attributes)
+    @property
+    def custom_blocks(self):
+        if self._custom_blocks:
+            return self._custom_blocks
+        blocks = find_first(self, ['project', 'blocks'])
+        if not blocks:
+            return {}
+        self._custom_blocks = dict([(block.block_name, block)
+                                    for block in blocks.children])
+        return self._custom_blocks
 
 
 def parse(filename):

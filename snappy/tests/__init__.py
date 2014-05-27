@@ -13,13 +13,15 @@ class BlockParser():
 
     def test_parse(self):
         parser = snap_parser.BlockParser()
-        block_parser = snap_parser.Script(parser)
-        block_parser.setup(None, 'script', {})
-        parser.pushParser(block_parser)
+        block_parser = snap_parser.Script(None, 'script', {})
+        parser.pushT(block_parser)
         tree = lxml.etree.parse(StringIO(self.xml))
         lxml.sax.saxify(tree, parser)
-        self.assertEqual([codegen.to_source(a) for a in block_parser.to_ast()],
+        self.assertEqual([codegen.to_source(a)
+                          for a in parser.children[0].to_ast()],
                          [self.code])
-        self.assertTrue(len(parser.parser_stack) == 1, parser.parser_stack)
-        self.assertTrue(isinstance(block_parser.exprs[0], self.parser),
-                        repr(block_parser.exprs[0]))
+        # There will be a remainder while testing, due to the manually
+        # created script tag.
+        self.assertTrue(len(parser.stack) == 1, parser.stack)
+        self.assertTrue(isinstance(block_parser.children[0], self.parser),
+                        repr(block_parser.children[0]))
