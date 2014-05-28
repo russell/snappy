@@ -123,6 +123,43 @@ class TestdoIfPass(tests.BlockParser, unittest.TestCase):
     Pass"""
 
 
+class TestBlockDefinition(tests.BlockParser, unittest.TestCase):
+    parser = parser.BlockDefinition
+
+    xml = """
+    <block-definition s="empty? %&apos;data&apos;"
+                      type="reporter" category="lists">
+      <header/>
+      <code/>
+      <inputs>
+        <input type="%l"/>
+      </inputs>
+      <script>
+      </script>
+      <password/>
+      <salt/>
+    </block-definition>
+    """
+
+    code = "def empty_data_(data):\n    Pass"
+
+    def test_arg_parsing(self):
+        block = self.parser('block-definition', None,
+                            {'s': 'foo',
+                             'type': 'reporter',
+                             'category': 'list'})
+        self.assertEqual(block.function_name, 'foo')
+        self.assertEqual(block.type, 'reporter')
+        self.assertEqual(block.category, 'list')
+
+        block = self.parser('block-definition', None,
+                            {'s': "empty? %'data'",
+                             'type': 'reporter',
+                             'category': 'list'})
+        self.assertEqual(block.function_name, 'empty_data_')
+        self.assertEqual(block.type, 'reporter')
+        self.assertEqual(block.category, 'list')
+        self.assertEqual(block.function_arguments, ['data'])
 class TestBlockParser(unittest.TestCase):
 
     def setUp(self):

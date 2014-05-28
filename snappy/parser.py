@@ -1,6 +1,7 @@
 import ast
 import codegen
 import copy
+import re
 
 import lxml.etree
 import lxml.sax
@@ -185,6 +186,25 @@ class BlockDefinition(BaseBlock):
         self.block_name = attributes['s']
         self.type = attributes['type']
         self.category = attributes['category']
+
+    def to_ast(self):
+        body = self.find_child(['script']).to_ast()
+        name = self.function_name
+        args = ast.arguments([ast.Name(arg, ast.Load())
+                              for arg in self.function_arguments],
+                             None, None, [])
+        return ast.FunctionDef(name, args, body, [])
+
+    @property
+    def function_name(self):
+        fn = re.sub('[^0-9a-zA-Z]+', '_', str(self.block_name))
+        return fn
+
+    @property
+    def function_arguments(self):
+        args = [a[1:].strip("'") for a in self.block_name.split(' ')
+                if a.startswith('%')]
+        return args
 
 
 class CustomBlock(BaseBlock):
