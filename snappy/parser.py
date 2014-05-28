@@ -135,6 +135,12 @@ class reportTrue(Block):
         return ast.Name('True', ast.Load())
 
 
+class reportAnd(Block):
+
+    def to_ast(self):
+        return ast.BoolOp(ast.And(), [v.to_ast() for v in self.children])
+
+
 class reportNewList(Block):
 
     def to_ast(self):

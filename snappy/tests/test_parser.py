@@ -85,6 +85,19 @@ class TestreportNewList(tests.BlockParser, unittest.TestCase):
     code = "['a', 'b', 10]"
 
 
+class TestreportAnd(tests.BlockParser, unittest.TestCase):
+    parser = parser.reportAnd
+
+    xml = """
+    <block s="reportAnd">
+      <block var="word1"/>
+      <block var="word2"/>
+    </block>
+    """
+
+    code = "(word1 and word2)"
+
+
 class TestdoDeclareVariablesParser(tests.BlockParser, unittest.TestCase):
     parser = parser.doDeclareVariables
 
