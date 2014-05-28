@@ -24,4 +24,6 @@ class BlockParser():
         # created script tag.
         self.assertTrue(len(parser.stack) == 1, parser.stack)
         self.assertTrue(isinstance(block_parser.children[0], self.parser),
-                        repr(block_parser.children[0]))
+                        "Block isn't correct type, should be %s but is %s" % (
+                            self.parser,
+                            repr(block_parser.children[0].__class__)))

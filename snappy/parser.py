@@ -71,8 +71,8 @@ class BaseBlock(Tag):
         self.stack = []
 
     def find_child(self, path):
-        state, remainder = find_closest(self.children, path)
-        if remainder:
+        state = find_first(self, path)
+        if not state:
             raise Exception("Couldn't find element")
         return state
 
@@ -125,7 +125,7 @@ class PassBlock(Block):
         self.children = []
 
     def to_ast(self):
-        return ast.Expr([ast.Name('Pass', ast.Load())])
+        return ast.Pass()
 
 
 class reportTrue(Block):
@@ -135,10 +135,57 @@ class reportTrue(Block):
         return ast.Name('True', ast.Load())
 
 
+class reportNot(Block):
+
+    def to_ast(self):
+        return ast.UnaryOp(ast.Not(), self.children[0].to_ast())
+
+
 class reportAnd(Block):
 
     def to_ast(self):
         return ast.BoolOp(ast.And(), [v.to_ast() for v in self.children])
+
+
+class reportEquals(Block):
+
+    def to_ast(self):
+        return ast.Compare(self.children[0].to_ast(),
+                           [ast.Eq()],
+                           [self.children[1].to_ast()])
+
+
+class reportLetter(Block):
+
+    def to_ast(self):
+        index = ast.Index(self.children[0].to_ast())
+        variable = self.children[1].to_ast()
+        return ast.Subscript(variable, index, ast.Load())
+
+
+class doInsertInList(Block):
+
+    def to_ast(self):
+        value = self.children[0].to_ast()
+        options = [o.text for o in self.children[1].children]
+        var = self.children[2].to_ast()
+        if '1' in options:
+            args = [ast.Num(0), value]
+            func = ast.Attribute(value=var, attr='insert')
+        else:  # This covers 'last' and 'any' cases
+            args = [value]
+            func = ast.Attribute(value=var, attr='append')
+        return ast.Expr(ast.Call(func, args, [], None, None))
+
+
+class doAddToList(Block):
+
+    def to_ast(self):
+        value = self.children[0].to_ast()
+        var = self.children[1].to_ast()
+        args = [value]
+        func = ast.Attribute(value=var, attr='append')
+        return ast.Expr(ast.Call(func, args, [], None, None))
 
 
 class reportNewList(Block):
@@ -169,6 +216,12 @@ class doDeclareVariables(Block):
         return assign
 
 
+class doReport(Block):
+
+    def to_ast(self):
+        return ast.Return(self.children[0].to_ast())
+
+
 class doIf(Block):
 
     def to_ast(self):
@@ -176,6 +229,16 @@ class doIf(Block):
                      self.children[1].to_ast(),
                      [])
         return _if
+
+
+class doForEach(Block):
+
+    def to_ast(self):
+        _for = ast.For(self.children[0].to_name(),
+                       self.children[1].to_ast(),
+                       self.children[2].to_ast(),
+                       [])
+        return _for
 
 
 class Script(BaseBlock):
@@ -219,6 +282,7 @@ class CustomBlock(BaseBlock):
         self.block_name = attributes['s']
 
     def to_ast(self):
+        # TODO This is probably broken
         return self.lookupCustomBlock(self.block_name)
 
 
@@ -267,7 +331,7 @@ builtin_blocks = {
     # 'fork': fork,
     # NOTE: there are 3 forms of this in snap
     # 'evaluate': evaluate,
-    # 'doReport': doReport,
+    'doReport': doReport,
     # 'doStopBlock': doStopBlock,
 
     #
@@ -279,15 +343,15 @@ builtin_blocks = {
     # 'reportQuotient': reportQuotient,  # /
     # 'reportRandom': reportRandom,  # randomFrom:to:
     # 'reportLessThan': reportLessThan,  # <
-    # 'reportEquals': reportEquals,  # =
+    'reportEquals': reportEquals,  # =
     # 'reportGreaterThan': reportGreaterThan,  # >
-    # 'reportAnd': reportAnd,  # &
+    'reportAnd': reportAnd,  # &
     # 'reportOr': reportOr,  # |
-    # 'reportNot': reportNot,  # not
+    'reportNot': reportNot,  # not
     'reportTrue': reportTrue,  # getTrue
     # 'reportFalse': reportFalse,  # getFalse
     # 'reportJoinWords': reportJoinWords,  # concatenate:with:
-    # 'reportLetter': reportLetter,  # letter:of:
+    'reportLetter': reportLetter,  # letter:of:
     # 'reportStringSize': reportStringSize,  # stringLength:
     # 'reportUnicode': reportUnicode,  # asciiCodeOf
     # 'reportUnicodeAsLetter': 'reportUnicodeAsLetter',  # asciiLetter
@@ -305,9 +369,9 @@ builtin_blocks = {
     # 'doHideVar': doHideVar,
     'doDeclareVariables': doDeclareVariables,
     'reportNewList': reportNewList,
-    # 'doAddToList': doAddToList,
+    'doAddToList': doAddToList,
     # 'doDeleteFromList': doDeleteFromList,
-    # 'doInsertInList': doInsertInList,
+    'doInsertInList': doInsertInList,
     # 'doReplaceInList': doReplaceInList,
     # 'reportListItem': reportListItem,
     # 'reportListLength': reportListLength,
@@ -317,6 +381,11 @@ builtin_blocks = {
     # Kludge
     #
     # 'doWarp': doWarp
+
+    #
+    # Edgy
+    #
+    'doForEach': doForEach,
 }
 
 

@@ -8,16 +8,6 @@ from snappy import parser
 SAMPLE_PROGRAMS = path.join(path.dirname(__file__), 'sample_programs')
 
 
-class TestreportTrue(tests.BlockParser, unittest.TestCase):
-    parser = parser.reportTrue
-
-    xml = """
-    <block s="reportTrue"/>
-    """
-
-    code = 'True'
-
-
 class TestNamedBlock(tests.BlockParser, unittest.TestCase):
     parser = parser.NamedBlock
 
@@ -69,6 +59,28 @@ class TestdoSetVarListParser(tests.BlockParser, unittest.TestCase):
     code = 'result = []'
 
 
+class TestreportTrue(tests.BlockParser, unittest.TestCase):
+    parser = parser.reportTrue
+
+    xml = """
+    <block s="reportTrue"/>
+    """
+
+    code = 'True'
+
+
+class TestreportNot(tests.BlockParser, unittest.TestCase):
+    parser = parser.reportNot
+
+    xml = """
+    <block s="reportNot">
+      <block s="reportTrue"/>
+    </block>
+    """
+
+    code = '(not True)'
+
+
 class TestreportNewList(tests.BlockParser, unittest.TestCase):
     parser = parser.reportNewList
 
@@ -96,6 +108,93 @@ class TestreportAnd(tests.BlockParser, unittest.TestCase):
     """
 
     code = "(word1 and word2)"
+
+
+class TestreportEquals(tests.BlockParser, unittest.TestCase):
+    parser = parser.reportEquals
+
+    xml = """
+    <block s="reportEquals">
+      <l>1</l>
+      <l>2</l>
+    </block>
+    """
+
+    code = "(1 == 2)"
+
+
+class TestreportLetter(tests.BlockParser, unittest.TestCase):
+    parser = parser.reportLetter
+
+    xml = """
+    <block s="reportLetter">
+      <l>1</l>
+      <block var="word"/>
+    </block>
+    """
+
+    code = "word[1]"
+
+
+class TestdoInsertInList(tests.BlockParser, unittest.TestCase):
+    parser = parser.doInsertInList
+
+    xml = """
+    <block s="doInsertInList">
+      <block var="word"/>
+      <l>
+        <option>last</option>
+      </l>
+      <block var="result"/>
+    </block>
+    """
+
+    code = "result.append(word)"
+
+
+class TestdoInsertInList1(tests.BlockParser, unittest.TestCase):
+    parser = parser.doInsertInList
+
+    xml = """
+    <block s="doInsertInList">
+      <block var="word"/>
+      <l>
+        <option>1</option>
+      </l>
+      <block var="result"/>
+    </block>
+    """
+
+    code = "result.insert(0, word)"
+
+
+class TestdoInsertInListAny(tests.BlockParser, unittest.TestCase):
+    parser = parser.doInsertInList
+
+    xml = """
+    <block s="doInsertInList">
+      <block var="word"/>
+      <l>
+        <option>any</option>
+      </l>
+      <block var="result"/>
+    </block>
+    """
+
+    code = "result.append(word)"
+
+
+class TestdoAddToList(tests.BlockParser, unittest.TestCase):
+    parser = parser.doAddToList
+
+    xml = """
+    <block s="doAddToList">
+      <block var="thisword"/>
+      <block var="result"/>
+    </block>
+    """
+
+    code = "result.append(thisword)"
 
 
 class TestdoDeclareVariablesParser(tests.BlockParser, unittest.TestCase):
@@ -143,7 +242,23 @@ class TestdoIfPass(tests.BlockParser, unittest.TestCase):
     """
 
     code = """if True:
-    Pass"""
+    pass"""
+
+
+class TestdoForEach(tests.BlockParser, unittest.TestCase):
+    parser = parser.doForEach
+
+    xml = """
+    <block s="doForEach">
+      <l>word</l>
+      <block var="words"/>
+      <script>
+      </script>
+    </block>
+    """
+
+    code = """for word in words:
+    pass"""
 
 
 class TestBlockDefinition(tests.BlockParser, unittest.TestCase):
@@ -164,7 +279,7 @@ class TestBlockDefinition(tests.BlockParser, unittest.TestCase):
     </block-definition>
     """
 
-    code = "def empty_data_(data):\n    Pass"
+    code = "def empty_data_(data):\n    pass"
 
     def test_arg_parsing(self):
         block = self.parser('block-definition', None,
