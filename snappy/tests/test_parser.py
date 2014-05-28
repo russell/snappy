@@ -18,6 +18,16 @@ class TestreportTrue(tests.BlockParser, unittest.TestCase):
     code = 'True'
 
 
+class TestNamedBlock(tests.BlockParser, unittest.TestCase):
+    parser = parser.NamedBlock
+
+    xml = """
+    <block var="hello"/>
+    """
+
+    code = 'hello'
+
+
 class TestdoSetVarParser(tests.BlockParser, unittest.TestCase):
     parser = parser.doSetVar
 

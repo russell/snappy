@@ -93,10 +93,9 @@ class NotImplementedBlock(Block):
 
 class NamedBlock(Block):
 
-    def setup(self, name, qname, attributes):
-        super(NamedBlock, self).setup(name, qname, attributes)
-        var = attributes['var']
-        self.block_name = var
+    def __init__(self, name, qname, attributes):
+        super(NamedBlock, self).__init__(name, qname, attributes)
+        self.block_name = attributes['var']
 
     def to_ast(self):
         return ast.Name(self.block_name, ast.Load())
