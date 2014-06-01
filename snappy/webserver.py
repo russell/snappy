@@ -159,28 +159,26 @@ class JobHandler(Resource):
 
 
 class JobsHandler(Resource):
-    jobs = {}
 
     def getChild(self, name, request):
-        if name not in self.jobs:
-            if name in os.listdir(JOB_DIR):
-                return JobHandler(self, name)
-            return NoResource()
-        return self.jobs[name]
+        if name in os.listdir(JOB_DIR):
+            return JobHandler(self, name)
+        return NoResource()
 
     def render_GET(self, request):
-        return "<html><body><pre>%s</pre></body></html>"
+        return json.dumps({'jobs': {'running': len(self.children),
+                                    'completed': len(os.listdir(JOB_DIR))}})
 
     def render_POST(self, request):
         request.setHeader("content-type", "application/json")
         body = request.content.read()
         id = generate_job_id()
-        self.jobs[id] = JobHandler(self, id, body)
+        self.children[id] = JobHandler(self, id, body)
         return json.dumps({'id': str(id)})
 
     def unregisterJob(self, job):
-        if job.id in self.jobs:
-            del self.jobs[job.id]
+        if job.id in self.children:
+            del self.children[job.id]
 
 
 class SnappySite(Resource):
@@ -188,8 +186,3 @@ class SnappySite(Resource):
         self.children = {
             'jobs': JobsHandler()
         }
-
-    def getChild(self, name, request):
-        if name not in self.children:
-            return NoResource()
-        return self.children[name]

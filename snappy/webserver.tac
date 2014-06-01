@@ -8,10 +8,11 @@
 import os
 from twisted.application import service, internet
 from twisted.web import static, server
+from snappy import webserver
 
 def getWebService():
     # create a resource to serve static files
-    snappyserver= server.Site(static.File(os.getcwd()))
+    snappyserver= server.Site(webserver.SnappySite())
     return internet.TCPServer(8888, snappyserver)
 
 # this is the core part of any tac file, the creation of the root-level
