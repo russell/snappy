@@ -298,13 +298,91 @@ class TestBlockDefinition(tests.BlockParser, unittest.TestCase):
         self.assertEqual(block.type, 'reporter')
         self.assertEqual(block.category, 'list')
         self.assertEqual(block.function_arguments, ['data'])
+
+import codegen
+
+
+class TestArgumentParser(unittest.TestCase):
+    pass
+
+
 class TestBlockParser(unittest.TestCase):
 
     def setUp(self):
         super(TestBlockParser, self).setUp()
 
-    def test_wh_words(self):
+    def test_wh_words_parser(self):
         filename = path.join(SAMPLE_PROGRAMS, 'wh_words.xml')
         p = parser.parse(filename)
-        self.assertTrue(len(p.scripts) == 2, p.scripts)
+        ctx = p.create_context()
+        self.assertTrue(len(p.scripts(ctx)) == 2, p.scripts)
         self.assertTrue(len(p.custom_blocks) == 29, p.custom_blocks)
+
+    def test_wh_words_function(self):
+        filename = path.join(SAMPLE_PROGRAMS, 'wh_words.xml')
+        p = parser.parse(filename)
+        ctx = p.create_context()
+        ast = p.custom_blocks["wh-words %s"].to_ast(ctx)
+  self.assertEqual(codegen.to_source (ast),
+                   '''def wh_words_words_(words):
+    (result,) = (None,)
+    result = []
+    for word in words:
+        if ((word[1] == 'w') and (word[2] == 'h')):
+            result.append(word)
+    return result
+''')
+
+    def test_for_function(self):
+        filename = path.join(SAMPLE_PROGRAMS, 'wh_words.xml')
+        p = parser.parse(filename)
+        ctx = p.create_context()
+        ast = p.custom_blocks["for %upvar = %n to %n %cs"].to_ast(ctx)
+        assertEqual(codegen.to_source(ast),
+                    '''def for_i_start_to_end_action_(i, start, end, action):
+    (step, tester) = (None, None)
+    if (start > end):
+        step = -1
+        tester = lambda : (i < end)
+    else:
+        step = 1
+        tester = lambda : (i > end)
+    i = start
+    while tester():
+        action()
+        i = i + step
+''')
+
+    def test_sentence_list(self):
+        filename = path.join(SAMPLE_PROGRAMS, 'wh_words.xml')
+        p = parser.parse(filename)
+        ctx = p.create_context()
+        print p.custom_blocks.keys()
+        ast = p.custom_blocks["sentence->list %txt"].to_ast(ctx)
+        assertEqual(codegen.to_source(ast),
+                    '''def sentence_list_text_(text):
+
+    def custom_block_0():
+        if (text[i] == ''):
+            if (not (thisword == emptyword)):
+                result.append(thisword)
+                thisword = emptyword
+        else:
+            thisword = thisword + text[i]
+    (result, thisword, emptyword) = (None, None, None)
+    result = []
+    thisword = ''
+    emptyword = ''
+    for_i_start_to_end_action_('i', 1, len(text), custom_block_0())
+    if (not (thisword == emptyword)):
+        result.append(thisword)
+    return result
+''')
+
+    # def test_wh_words_render_file(self):
+
+    #     filename = path.join(SAMPLE_PROGRAMS, 'wh_words.xml')
+    #     p = parser.parse(filename)
+    #     ctx = p.create_context()
+    #     file_ast = p.to_ast(ctx)
+    #     print codegen.to_source(file_ast)

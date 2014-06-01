@@ -17,8 +17,9 @@ class BlockParser():
         parser.pushT(block_parser)
         tree = lxml.etree.parse(StringIO(self.xml))
         lxml.sax.saxify(tree, parser)
+        ctx = parser.create_context()
         self.assertEqual([codegen.to_source(a)
-                          for a in parser.children[0].to_ast()],
+                          for a in parser.children[0].to_ast(ctx)],
                          [self.code])
         # There will be a remainder while testing, due to the manually
         # created script tag.
