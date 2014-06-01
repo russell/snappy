@@ -16,9 +16,26 @@ LAST = -1
 SCRIPT_HEADER = """
 
 import logging
+import collections
+
 LOG = logging.get_logger(__file__)
 
 
+_report = collections.defaultdict(list)
+
+def _doReport(result, name):
+    _report[name].append(result)
+    return result
+
+def _dumpReport(result, name):
+    import json
+    result = open('result.json', 'w')
+    result.write(json.dumps(_report))
+
+"""
+
+SCRIPT_FOOTER = """
+_dumpReport()
 """
 
 
@@ -105,7 +122,12 @@ class NamedBlock(Block):
         self.block_name = attributes['var']
 
     def to_ast(self, ctx):
-        return ast.Name(self.block_name, ast.Load())
+        if self.block_name not in ctx.variables:
+            return ast.Name(self.block_name, ast.Load())
+        name = ast.Name('_vars', ast.Load())
+        index = ast.Index(ast.Str(self.block_name))
+        var = ast.Subscript(name, index, ast.Load())
+        return var
 
 
 class LiteralBlock(Tag):
@@ -247,8 +269,10 @@ class doAddToList(Block):
 class doSetVar(Block):
 
     def to_ast(self, ctx):
-        name = [self.children[0].to_name()]
-        return ast.Assign(name, self.children[1].to_ast(ctx))
+        name = ast.Name('_vars', ast.Load())
+        index = ast.Index(self.children[0].to_ast(ctx))
+        var = ast.Subscript(name, index, ast.Load())
+        return ast.Assign([var], self.children[1].to_ast(ctx))
 
 
 class doChangeVar(Block):
@@ -263,20 +287,17 @@ class doDeclareVariables(Block):
 
     def to_ast(self, ctx):
         variables = self.find_child(['list'])
-        names = ast.Tuple([ast.Name(var.text, ast.Load())
-                          for var in variables],
-                          ast.Load())
-        values = ast.Tuple([ast.Name('None', ast.Load())
-                            for var in variables],
-                           ast.Load())
-        assign = ast.Assign([names], values)
-        return assign
+        ctx.variables.extend([v.text for v in variables])
+        return None
 
 
 class doReport(Block):
 
     def to_ast(self, ctx):
-        return ast.Return(self.children[0].to_ast(ctx))
+        func = ast.Name('doReport', ast.Load())
+        args = [self.children[0].to_ast(ctx),
+                ast.Str(ctx.function.function_name)]
+        return ast.Return(ast.Call(func, args, [], None, None))
 
 
 class doIf(Block):
@@ -304,6 +325,14 @@ class Evaluate(Block):
         assert not self.find_child(['list']).children, "Evaluate with arguments, isn't supported."
         args = []
         func = self.children[0].to_ast(ctx)
+        func_name = self.children[0].block_name
+        # If the thing being evaluated was passed in as an argument.
+        # Then call it with all the args from the that were passed
+        # into this function.
+        if func_name in ctx.function.function_arguments:
+            args = [ast.Name(arg, ast.Load())
+                    for arg in ctx.function.function_arguments]
+            return ast.Call(func, args, [], None, None)
         return ast.Call(func, args, [], None, None)
 
 
@@ -351,6 +380,10 @@ class Reify(Block):
 
 
 class Script(BaseBlock):
+
+    def has_body(self):
+        return bool(self.children)
+
     def inline_node(self, node):
         if node.__class__ not in [ast.FunctionDef, ast.For, ast.While, PassBlock]:
             return ast.Expr(node)
@@ -359,7 +392,8 @@ class Script(BaseBlock):
 
     def to_ast(self, ctx):
         return [self.inline_node(e.to_ast(ctx))
-                for e in self.children or [PassBlock()]]
+                for e in self.children or [PassBlock()]
+                if e]
 
 
 class BlockDefinition(BaseBlock):
@@ -374,14 +408,20 @@ class BlockDefinition(BaseBlock):
     def to_ast(self, ctx):
         ctx = ctx.copy()
         ctx.function = self
-        body = self.find_child(['script']).to_ast(ctx)
         name = self.function_name
         args = ast.arguments([ast.Name(arg, ast.Load())
                               for arg in self.function_arguments],
                              None, None, [])
-        # Put any inner functions at the start of the body.  This has
-        # to happen after the body has been evaluated.
-        body = self.inner_functions + body
+        script = self.find_child(['script'])
+        script_ast = script.to_ast(ctx)
+        vars = ast.Assign([ast.Name('_vars', ast.Load())], ast.Dict([], []))
+
+        if script.has_body():
+            # Put any inner functions at the start of the body.  This has
+            # to happen after the body has been evaluated.
+            body = [ast.Expr(vars)] + self.inner_functions + script_ast
+        else:
+            body = script_ast
         return ast.FunctionDef(name, args, body, [])
 
     def custom_block_id(self):
@@ -409,6 +449,9 @@ class BlockDefinition(BaseBlock):
     def function_argument_types(self):
         return [i.type for i in self.find_child(['inputs']).children]
 
+    def function_argument_type(self, arg):
+        return dict(zip(self.children, func.function_argument_types))[arg]
+
 
 class CustomBlock(BaseBlock):
     counter = itertools.count().next
@@ -417,11 +460,13 @@ class CustomBlock(BaseBlock):
         super(CustomBlock, self).__init__(name, qname, attributes)
         self.block_name = attributes['s']
 
-    def to_func(self, ctx, body):
+    def to_func(self, ctx, func, body):
         """Append the custom block as a function into the parent functions
         scope."""
         func_name = 'custom_block_' + str(self.counter())
-        args = ast.arguments([], None, None, [])
+        args = ast.arguments([ast.Name(arg, ast.Load())
+                              for arg in func.function_arguments],
+                             None, None, [])
         ctx.function.inner_functions.append(
             ast.FunctionDef(func_name, args, body, []))
         return func_name
@@ -433,9 +478,8 @@ class CustomBlock(BaseBlock):
         for arg, type in zip(self.children, func.function_argument_types):
             arg_ast = arg.to_ast(ctx)
             if type == '%cs':
-                name = self.to_func(ctx, arg_ast)
-                args.append(ast.Call(ast.Name(name, ast.Load()),
-                                     [], [], None, None))
+                name = self.to_func(ctx, func, arg_ast)
+                args.append(ast.Name(name, ast.Load()))
             else:
                 args.append(arg_ast)
 
@@ -560,6 +604,7 @@ class Context():
         self.custom_blocks = custom_blocks
         self.function = function
         self.module = module
+        self.variables = []
         self.used_custom_blocks = used_custom_blocks
 
     def lookupCustomBlock(self, name):
@@ -568,7 +613,10 @@ class Context():
         return self.custom_blocks[name]
 
     def copy(self):
-        return Context(**vars(self))
+        kwargs = vars(self)
+        if 'variables' in kwargs:
+            del kwargs['variables']
+        return Context(**kwargs)
 
 
 class BlockParser(ContentHandler):
@@ -652,8 +700,9 @@ class BlockParser(ContentHandler):
     def create_context(self, module=None):
         return Context(custom_blocks=self.custom_blocks, used_custom_blocks=[])
 
-    def to_ast(self, ctx):
+    def to_ast(self, ctx, main_func=None):
         script = ast.parse(SCRIPT_HEADER)
+        script_footer = ast.parse(SCRIPT_FOOTER)
         body = script.body
         ctx = self.create_context(module=script)
         body.extend(self.scripts(ctx))
@@ -662,10 +711,19 @@ class BlockParser(ContentHandler):
         for block in self.custom_blocks.values():
             try:
                 block_ast = block.to_ast(ctx)
-            except:
+            except Exception as e:
+                LOG.exception(e)
                 LOG.warning("Failed to generate function for %s" % block.block_name)
             else:
                 body.append(block_ast)
+        if main_func:
+            body.append(
+                ast.Expr(
+                    ast.Call(
+                        ast.Name(main_func, ast.Load()),
+                        [], [], None, None)))
+
+        script.body.extend(script_footer.body)
         return script
 
 

@@ -1,6 +1,7 @@
 import os
 from os import path
 import unittest
+import difflib
 from snappy import tests
 from snappy import parser
 
@@ -28,7 +29,7 @@ class TestdoSetVarParser(tests.BlockParser, unittest.TestCase):
     </block>
     """
 
-    code = "i = 'hello'"
+    code = "_var['i'] = 'hello'"
 
 
 class TestdoSetVarIntParser(tests.BlockParser, unittest.TestCase):
@@ -41,7 +42,7 @@ class TestdoSetVarIntParser(tests.BlockParser, unittest.TestCase):
     </block>
     """
 
-    code = 'i = 4'
+    code = "_var['i'] = 4"
 
 
 class TestdoSetVarListParser(tests.BlockParser, unittest.TestCase):
@@ -56,7 +57,7 @@ class TestdoSetVarListParser(tests.BlockParser, unittest.TestCase):
     </block>
     """
 
-    code = 'result = []'
+    code = "_var['result'] = []"
 
 
 class TestreportTrue(tests.BlockParser, unittest.TestCase):
@@ -228,7 +229,7 @@ class TestdoIf(tests.BlockParser, unittest.TestCase):
     """
 
     code = """if True:
-    i = 0"""
+    _var['i'] = 0"""
 
 
 class TestdoIfPass(tests.BlockParser, unittest.TestCase):
@@ -311,6 +312,17 @@ class TestBlockParser(unittest.TestCase):
     def setUp(self):
         super(TestBlockParser, self).setUp()
 
+    def assertAST(self, ast, string):
+        ast_string = codegen.to_source(ast)
+        try:
+            self.assertEqual(ast_string, string)
+        except:
+            for line in difflib.unified_diff(ast_string.split('\n'),
+                                             string.split('\n'),
+                                             n=100):
+                print line
+            raise
+
     def test_wh_words_parser(self):
         filename = path.join(SAMPLE_PROGRAMS, 'wh_words.xml')
         p = parser.parse(filename)
@@ -323,66 +335,64 @@ class TestBlockParser(unittest.TestCase):
         p = parser.parse(filename)
         ctx = p.create_context()
         ast = p.custom_blocks["wh-words %s"].to_ast(ctx)
-  self.assertEqual(codegen.to_source (ast),
+
+        self.assertAST(ast,
                    '''def wh_words_words_(words):
-    (result,) = (None,)
-    result = []
+    _vars = {}
+    _vars['result'] = []
     for word in words:
         if ((word[1] == 'w') and (word[2] == 'h')):
-            result.append(word)
-    return result
-''')
+            _vars['result'].append(word)
+    return doReport(_vars['result'], 'wh_words_words_')''')
 
     def test_for_function(self):
         filename = path.join(SAMPLE_PROGRAMS, 'wh_words.xml')
         p = parser.parse(filename)
         ctx = p.create_context()
         ast = p.custom_blocks["for %upvar = %n to %n %cs"].to_ast(ctx)
-        assertEqual(codegen.to_source(ast),
+        self.assertAST(ast,
                     '''def for_i_start_to_end_action_(i, start, end, action):
-    (step, tester) = (None, None)
+    _vars = {}
     if (start > end):
-        step = -1
-        tester = lambda : (i < end)
+        _vars['step'] = -1
+        _vars['tester'] = lambda : (i < end)
     else:
-        step = 1
-        tester = lambda : (i > end)
-    i = start
-    while tester():
-        action()
-        i = i + step
-''')
+        _vars['step'] = 1
+        _vars['tester'] = lambda : (i > end)
+    _vars['i'] = start
+    while _vars['tester']():
+        action(i, start, end, action)
+        i = i + _vars['step']''')
 
     def test_sentence_list(self):
         filename = path.join(SAMPLE_PROGRAMS, 'wh_words.xml')
         p = parser.parse(filename)
         ctx = p.create_context()
-        print p.custom_blocks.keys()
         ast = p.custom_blocks["sentence->list %txt"].to_ast(ctx)
-        assertEqual(codegen.to_source(ast),
+        self.assertAST(ast,
                     '''def sentence_list_text_(text):
+    _vars = {}
 
-    def custom_block_0():
+    def custom_block_0(i, start, end, action):
         if (text[i] == ''):
-            if (not (thisword == emptyword)):
-                result.append(thisword)
-                thisword = emptyword
+            if (not (_vars['thisword'] == _vars['emptyword'])):
+                _vars['result'].append(_vars['thisword'])
+                _vars['thisword'] = _vars['emptyword']
         else:
-            thisword = thisword + text[i]
-    (result, thisword, emptyword) = (None, None, None)
-    result = []
-    thisword = ''
-    emptyword = ''
-    for_i_start_to_end_action_('i', 1, len(text), custom_block_0())
-    if (not (thisword == emptyword)):
-        result.append(thisword)
-    return result
-''')
+            _vars['thisword'] = _vars['thisword'] + text[i]
+    _vars['result'] = []
+    _vars['thisword'] = ''
+    _vars['emptyword'] = ''
+    for_i_start_to_end_action_('i', 1, len(text), custom_block_0)
+    if (not (_vars['thisword'] == _vars['emptyword'])):
+        _vars['result'].append(_vars['thisword'])
+    return doReport(_vars['result'], 'sentence_list_text_')''')
 
     # def test_wh_words_render_file(self):
 
     #     filename = path.join(SAMPLE_PROGRAMS, 'wh_words.xml')
     #     p = parser.parse(filename)
     #     ctx = p.create_context()
-    #     file_ast = p.to_ast(ctx)
+    #     file_ast = p.to_ast(ctx, 'main_0')
     #     print codegen.to_source(file_ast)
+    #     raise Exception()
