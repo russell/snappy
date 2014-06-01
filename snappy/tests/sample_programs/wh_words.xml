@@ -641,7 +641,7 @@
                       <block var="i"/>
                       <block var="text"/>
                     </block>
-                    <l/>
+                    <l> </l>
                   </block>
                   <script>
                     <block s="doIf">

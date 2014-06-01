@@ -29,7 +29,7 @@ class TestdoSetVarParser(tests.BlockParser, unittest.TestCase):
     </block>
     """
 
-    code = "_var['i'] = 'hello'"
+    code = "_vars['i'] = 'hello'"
 
 
 class TestdoSetVarIntParser(tests.BlockParser, unittest.TestCase):
@@ -42,7 +42,7 @@ class TestdoSetVarIntParser(tests.BlockParser, unittest.TestCase):
     </block>
     """
 
-    code = "_var['i'] = 4"
+    code = "_vars['i'] = 4"
 
 
 class TestdoSetVarListParser(tests.BlockParser, unittest.TestCase):
@@ -57,7 +57,7 @@ class TestdoSetVarListParser(tests.BlockParser, unittest.TestCase):
     </block>
     """
 
-    code = "_var['result'] = []"
+    code = "_vars['result'] = []"
 
 
 class TestreportTrue(tests.BlockParser, unittest.TestCase):
@@ -134,7 +134,7 @@ class TestreportLetter(tests.BlockParser, unittest.TestCase):
     </block>
     """
 
-    code = "word[1]"
+    code = "word[1 - 1]"
 
 
 class TestdoInsertInList(tests.BlockParser, unittest.TestCase):
@@ -210,7 +210,7 @@ class TestdoDeclareVariablesParser(tests.BlockParser, unittest.TestCase):
     </block>
     """
 
-    code = '(mapone, mapmany) = (None, None)'
+    code = ''
 
 
 class TestdoIf(tests.BlockParser, unittest.TestCase):
@@ -229,7 +229,7 @@ class TestdoIf(tests.BlockParser, unittest.TestCase):
     """
 
     code = """if True:
-    _var['i'] = 0"""
+    _vars['i'] = 0"""
 
 
 class TestdoIfPass(tests.BlockParser, unittest.TestCase):
@@ -341,9 +341,9 @@ class TestBlockParser(unittest.TestCase):
     _vars = {}
     _vars['result'] = []
     for word in words:
-        if ((word[1] == 'w') and (word[2] == 'h')):
+        if ((word[1 - 1] == 'w') and (word[2 - 1] == 'h')):
             _vars['result'].append(word)
-    return doReport(_vars['result'], 'wh_words_words_')''')
+    return _doReport(_vars['result'], 'wh_words_words_')''')
 
     def test_for_function(self):
         filename = path.join(SAMPLE_PROGRAMS, 'wh_words.xml')
@@ -359,8 +359,8 @@ class TestBlockParser(unittest.TestCase):
     else:
         _vars['step'] = 1
         _vars['tester'] = lambda : (i > end)
-    _vars['i'] = start
-    while _vars['tester']():
+    i = start
+    while (not _vars['tester']()):
         action(i, start, end, action)
         i = i + _vars['step']''')
 
@@ -374,19 +374,19 @@ class TestBlockParser(unittest.TestCase):
     _vars = {}
 
     def custom_block_0(i, start, end, action):
-        if (text[i] == ''):
+        if (text[i - 1] == ' '):
             if (not (_vars['thisword'] == _vars['emptyword'])):
                 _vars['result'].append(_vars['thisword'])
                 _vars['thisword'] = _vars['emptyword']
         else:
-            _vars['thisword'] = _vars['thisword'] + text[i]
+            _vars['thisword'] = _vars['thisword'] + text[i - 1]
     _vars['result'] = []
     _vars['thisword'] = ''
     _vars['emptyword'] = ''
     for_i_start_to_end_action_('i', 1, len(text), custom_block_0)
     if (not (_vars['thisword'] == _vars['emptyword'])):
         _vars['result'].append(_vars['thisword'])
-    return doReport(_vars['result'], 'sentence_list_text_')''')
+    return _doReport(_vars['result'], 'sentence_list_text_')''')
 
     # def test_wh_words_render_file(self):
 

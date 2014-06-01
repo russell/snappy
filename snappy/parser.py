@@ -3,6 +3,7 @@ import codegen
 import copy
 import re
 import itertools
+from StringIO import StringIO
 
 import lxml.etree
 import lxml.sax
@@ -18,8 +19,8 @@ SCRIPT_HEADER = """
 import logging
 import collections
 
-LOG = logging.get_logger(__file__)
-
+LOG = logging.getLogger(__file__)
+LOG.info('Started')
 
 _report = collections.defaultdict(list)
 
@@ -27,15 +28,18 @@ def _doReport(result, name):
     _report[name].append(result)
     return result
 
-def _dumpReport(result, name):
+def _dumpReport():
     import json
-    result = open('result.json', 'w')
+    import os
+    result_file = os.path.join(os.path.dirname(__file__), 'result.json')
+    result = open(result_file, 'w')
     result.write(json.dumps(_report))
 
 """
 
 SCRIPT_FOOTER = """
 _dumpReport()
+LOG.info('Finished')
 """
 
 
@@ -122,6 +126,8 @@ class NamedBlock(Block):
         self.block_name = attributes['var']
 
     def to_ast(self, ctx):
+        if ctx.function and self.block_name in ctx.function.function_arguments:
+            return ast.Name(self.block_name, ast.Load())
         if self.block_name not in ctx.variables:
             return ast.Name(self.block_name, ast.Load())
         name = ast.Name('_vars', ast.Load())
@@ -142,6 +148,12 @@ class LiteralBlock(Tag):
     def to_name(self):
         value = ast.Name(self.text, ast.Load())
         return value
+
+
+class Option(Tag):
+
+    def __repr__(self):
+        return "<Option name='%s' %s>" % (self.name, self.attributes)
 
 
 class Input(Tag):
@@ -227,7 +239,8 @@ class reportJoinWords(Block):
 class reportLetter(Block):
 
     def to_ast(self, ctx):
-        index = ast.Index(self.children[0].to_ast(ctx))
+        index = ast.Index(ast.BinOp(self.children[0].to_ast(ctx),
+                                    ast.Sub(), ast.Num(1)))
         variable = self.children[1].to_ast(ctx)
         return ast.Subscript(variable, index, ast.Load())
 
@@ -245,7 +258,8 @@ class doInsertInList(Block):
 
     def to_ast(self, ctx):
         value = self.children[0].to_ast(ctx)
-        options = [o.text for o in self.children[1].children]
+        options = [o.text for o in self.children[1].children
+                   if isinstance(o, Option)]
         var = self.children[2].to_ast(ctx)
         if '1' in options:
             args = [ast.Num(0), value]
@@ -269,9 +283,13 @@ class doAddToList(Block):
 class doSetVar(Block):
 
     def to_ast(self, ctx):
-        name = ast.Name('_vars', ast.Load())
-        index = ast.Index(self.children[0].to_ast(ctx))
-        var = ast.Subscript(name, index, ast.Load())
+        var = self.children[0].text
+        if ctx.function and var in ctx.function.function_arguments:
+            var = ast.Name(var, ast.Load())
+        else:
+            name = ast.Name('_vars', ast.Load())
+            index = ast.Index(self.children[0].to_ast(ctx))
+            var = ast.Subscript(name, index, ast.Load())
         return ast.Assign([var], self.children[1].to_ast(ctx))
 
 
@@ -294,7 +312,7 @@ class doDeclareVariables(Block):
 class doReport(Block):
 
     def to_ast(self, ctx):
-        func = ast.Name('doReport', ast.Load())
+        func = ast.Name('_doReport', ast.Load())
         args = [self.children[0].to_ast(ctx),
                 ast.Str(ctx.function.function_name)]
         return ast.Return(ast.Call(func, args, [], None, None))
@@ -340,7 +358,7 @@ class doUntil(Block):
 
     def to_ast(self, ctx):
         _while = ast.While(
-            self.children[0].to_ast(ctx),
+            ast.UnaryOp(ast.Not(), self.children[0].to_ast(ctx)),
             self.children[1].to_ast(ctx),
             []
         )
@@ -504,6 +522,7 @@ def block_handler(name, qname, attributes):
 
 tag_parsers = {
     'l': LiteralBlock,
+    'option': Option,
     'list': Tag,
     'script': Script,
     'block': block_handler,
@@ -660,12 +679,14 @@ class BlockParser(ContentHandler):
         return tag
 
     def endElementNS(self, name, qname):
+        self.current_tag = None
         if self.stack:
             self.popT(qname)
 
     def characters(self, data):
-        data = data.strip()
-        if hasattr(self, 'current_tag') and data:
+        if not hasattr(self, 'current_tag'):
+            return
+        if data and isinstance(self.current_tag, (Option, LiteralBlock)):
             self.current_tag.children.append(data)
 
     def scripts(self, ctx):
@@ -712,8 +733,8 @@ class BlockParser(ContentHandler):
             try:
                 block_ast = block.to_ast(ctx)
             except Exception as e:
-                LOG.exception(e)
-                LOG.warning("Failed to generate function for %s" % block.block_name)
+                # LOG.exception(e)
+                LOG.debug("Failed to generate function for %s" % block.block_name)
             else:
                 body.append(block_ast)
         if main_func:
@@ -729,6 +750,12 @@ class BlockParser(ContentHandler):
 
 def parse(filename):
     tree = lxml.etree.parse(open(filename))
+    handler = BlockParser()
+    lxml.sax.saxify(tree, handler)
+    return handler
+
+def parses(string):
+    tree = lxml.etree.parse(StringIO(string))
     handler = BlockParser()
     lxml.sax.saxify(tree, handler)
     return handler
