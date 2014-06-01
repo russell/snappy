@@ -20,6 +20,7 @@ setup(name='snappy',
       install_requires=[
           'lxml',
           'nose',
+          'twisted',
           'mock',
           'codegen',
       ],
