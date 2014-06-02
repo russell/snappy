@@ -121,10 +121,10 @@ class JobHandler(Resource):
         # Write uploaded program
         xml = os.path.join(self.job_dir, 'job.xml')
         with open(xml, 'w') as file:
-            file.write(project['project'])
+            file.write(project['project'].encode('utf-8'))
 
         # Parse and write python program
-        p = parser.parses(project['project'])
+        p = parser.parses(project['project'].encode('utf-8'))
         ctx = p.create_context()
         file_ast = p.to_ast(ctx, 'main_%s' % block_id)
         code = codegen.to_source(file_ast)
