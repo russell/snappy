@@ -112,8 +112,6 @@ class JobHandler(Resource):
         return NoResource()
 
     def startJob(self, body):
-        if not os.path.exists(JOB_DIR):
-            os.mkdir(JOB_DIR)
         os.mkdir(self.job_dir)
 
         # Write uploaded program
@@ -194,3 +192,5 @@ class SnappySite(Resource):
         self.children = {
             'jobs': JobsHandler()
         }
+        if not os.path.exists(JOB_DIR):
+            os.mkdir(JOB_DIR)
