@@ -155,8 +155,8 @@ class JobHandler(Resource):
         return json.load(open(state_file))
 
     def render_GET(self, request):
-        request.setHeader("content-type", "application/json")
         request.setHeader("Access-Control-Allow-Origin", "*")
+        request.setHeader("content-type", "application/json")
         if self.state == 'finished':
             return json.dumps(self.state_file())
         return json.dumps(self.state_dict())
@@ -171,6 +171,7 @@ class JobsHandler(Resource):
 
     def render_GET(self, request):
         request.setHeader("Access-Control-Allow-Origin", "*")
+        request.setHeader("content-type", "application/json")
         return json.dumps({'jobs': {'running': len(self.children),
                                     'completed': len(os.listdir(JOB_DIR))}})
 
