@@ -22,10 +22,10 @@ import collections
 LOG = logging.getLogger(__file__)
 LOG.info('Started')
 
-_report = collections.defaultdict(list)
+_report = {}
 
 def _doReport(result, name):
-    _report[name].append(result)
+    _report['result'] = (name, result)
     return result
 
 def _dumpReport():
@@ -33,7 +33,7 @@ def _dumpReport():
     import os
     result_file = os.path.join(os.path.dirname(__file__), 'result.json')
     result = open(result_file, 'w')
-    result.write(json.dumps(_report))
+    result.write(json.dumps(_report['result']))
 
 """
 
