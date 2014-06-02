@@ -113,16 +113,20 @@ class JobHandler(Resource):
 
     def startJob(self, body):
         os.mkdir(self.job_dir)
+        project = json.loads(body)
+
+        sprit_id = project['sprite_idx']
+        block_id = project['block_idx']
 
         # Write uploaded program
         xml = os.path.join(self.job_dir, 'job.xml')
         with open(xml, 'w') as file:
-            file.write(body)
+            file.write(project['project'])
 
         # Parse and write python program
-        p = parser.parses(body)
+        p = parser.parses(project['project'])
         ctx = p.create_context()
-        file_ast = p.to_ast(ctx, 'main_0')
+        file_ast = p.to_ast(ctx, 'main_%s' % block_id)
         code = codegen.to_source(file_ast)
         program = os.path.join(self.job_dir, 'job.py')
         with open(program, 'w') as file:
