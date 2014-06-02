@@ -60,6 +60,19 @@ class TestdoSetVarListParser(tests.BlockParser, unittest.TestCase):
     code = "_vars['result'] = []"
 
 
+class TestdoChangeVar(tests.BlockParser, unittest.TestCase):
+    parser = parser.doChangeVar
+
+    xml = """
+    <block s="doChangeVar">
+      <l>i</l>
+      <l>1</l>
+    </block>
+    """
+
+    code = "_vars['i'] = _vars['i'] + 1"
+
+
 class TestreportTrue(tests.BlockParser, unittest.TestCase):
     parser = parser.reportTrue
 

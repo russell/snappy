@@ -298,9 +298,16 @@ class doSetVar(Block):
 class doChangeVar(Block):
 
     def to_ast(self, ctx):
-        name = self.children[0].to_name()
-        change = ast.BinOp(name, ast.Add(), self.children[1].to_ast(ctx))
-        return ast.Assign([name], change)
+        name = self.children[0].text
+        if ctx.function and name in ctx.function.function_arguments:
+            var = self.children[0].to_name()
+            change = ast.BinOp(var, ast.Add(), self.children[1].to_ast(ctx))
+        else:
+            name = ast.Name('_vars', ast.Load())
+            index = ast.Index(self.children[0].to_ast(ctx))
+            var = ast.Subscript(name, index, ast.Load())
+            change = ast.BinOp(var, ast.Add(), self.children[1].to_ast(ctx))
+        return ast.Assign([var], change)
 
 
 class doDeclareVariables(Block):
