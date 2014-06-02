@@ -30,6 +30,7 @@ def generate_job_id():
 class NoResource(Resource):
 
     def render_GET(self, request):
+        request.setHeader("Access-Control-Allow-Origin", "*")
         request.setHeader("content-type", "application/json")
         request.setResponseCode(404)
         return json.dumps({'error': "Resource Not Found."})
@@ -41,6 +42,7 @@ class JSONFileResource(Resource):
         self.filename = filename
 
     def render_GET(self, request):
+        request.setHeader("Access-Control-Allow-Origin", "*")
         request.setHeader("content-type", "application/json")
         return json.dumps(json.load(open(self.filename)))
 
@@ -51,6 +53,7 @@ class FileResource(Resource):
         self.filename = filename
 
     def render_GET(self, request):
+        request.setHeader("Access-Control-Allow-Origin", "*")
         request.setHeader("content-type", "text/plain")
         return open(self.filename).read()
 
@@ -153,6 +156,7 @@ class JobHandler(Resource):
 
     def render_GET(self, request):
         request.setHeader("content-type", "application/json")
+        request.setHeader("Access-Control-Allow-Origin", "*")
         if self.state == 'finished':
             return json.dumps(self.state_file())
         return json.dumps(self.state_dict())
@@ -166,10 +170,12 @@ class JobsHandler(Resource):
         return NoResource()
 
     def render_GET(self, request):
+        request.setHeader("Access-Control-Allow-Origin", "*")
         return json.dumps({'jobs': {'running': len(self.children),
                                     'completed': len(os.listdir(JOB_DIR))}})
 
     def render_POST(self, request):
+        request.setHeader("Access-Control-Allow-Origin", "*")
         request.setHeader("content-type", "application/json")
         body = request.content.read()
         id = generate_job_id()
