@@ -1,19 +1,18 @@
-from datetime import date
-import uuid
-import os
-import sys
-import json
-import subprocess
 from StringIO import StringIO
-import datetime
-
-import codegen
+from datetime import date
 import cgi
-from twisted.web.server import Site
-from twisted.web.resource import Resource
-from twisted.internet import reactor
+import datetime
+import json
+import os
+import subprocess
+import sys
+import uuid
+
+from twisted.internet import reactor, defer, protocol
 from twisted.python import log
-from twisted.internet import protocol
+from twisted.web.resource import Resource
+from twisted.web.server import Site, NOT_DONE_YET
+import astor
 
 from snappy import parser
 
@@ -26,6 +25,11 @@ def generate_job_id():
             continue
         return str(id)
 
+def parse_datetime(dt_str):
+    dt, _, us= dt_str.partition(".")
+    dt= datetime.datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S")
+    us= int(us.rstrip("Z"), 10)
+    return dt + datetime.timedelta(microseconds=us)
 
 class NoResource(Resource):
 
@@ -44,6 +48,8 @@ class JSONFileResource(Resource):
     def render_GET(self, request):
         request.setHeader("Access-Control-Allow-Origin", "*")
         request.setHeader("content-type", "application/json")
+        if not os.path.exists(self.filename):
+            return NoResource()
         return json.dumps(json.load(open(self.filename)))
 
 
@@ -55,6 +61,8 @@ class FileResource(Resource):
     def render_GET(self, request):
         request.setHeader("Access-Control-Allow-Origin", "*")
         request.setHeader("content-type", "text/plain")
+        if not os.path.exists(self.filename):
+            return NoResource()
         return open(self.filename).read()
 
 
@@ -64,9 +72,8 @@ class JobProcess(protocol.ProcessProtocol):
         self.id = id
         self.job_handler = job_handler
         self.data = ""
-        job_dir = os.path.join(JOB_DIR, str(id))
-        logfilename = os.path.join(job_dir, 'job.out')
-        self.logfile = open(logfilename, 'w')
+        self.logfile = open(job_handler.log_file, 'w')
+        self.deferreds = []
 
     def connectionMade(self):
         log.msg('Started Job %s' % id)
@@ -83,32 +90,43 @@ class JobProcess(protocol.ProcessProtocol):
             self.job_handler.processExited('finished')
         else:
             self.job_handler.processExited('error')
+        for d in self.deferreds:
+            d.callback(self)
+
+    def wait_for(self):
+        d = defer.Deferred()
+        self.deferreds.append(d)
+        return d
 
 
 class JobHandler(Resource):
 
     def __init__(self, handler, id, body=None):
         Resource.__init__(self)
+        self.state = 'finished'
         self.started = None
         self.finished = None
         self.handler = handler
         self.id = id
         self.job_dir = os.path.join(JOB_DIR, id)
+        self.job_process = None
+        self.result_file = os.path.join(self.job_dir, 'result.json')
+        self.log_file = os.path.join(self.job_dir, 'job.log')
+        self.state_file = os.path.join(self.job_dir, 'job.state')
         if body:
             self.state = 'stopped'
             self.startJob(body)
-        else:
-            self.state = 'finished'
+        if os.path.exists(self.state_file):
+            state = json.load(open(self.state_file))
+            self.started = parse_datetime(state['started'])
+            self.finished = parse_datetime(state['finished'])
+            self.state = state['state']
 
     def getChild(self, name, request):
         if name == 'result':
-            result = os.path.join(self.job_dir, 'result.json')
-            if os.path.exists(result):
-                return JSONFileResource(result)
+            return JSONFileResource(self.result_file)
         if name == 'log':
-            log = os.path.join(self.job_dir, 'job.out')
-            if os.path.exists(log):
-                return FileResource(log)
+            return FileResource(self.log_file)
         return NoResource()
 
     def startJob(self, body):
@@ -127,14 +145,14 @@ class JobHandler(Resource):
         p = parser.parses(project['project'].encode('utf-8'))
         ctx = p.create_context()
         file_ast = p.to_ast(ctx, 'main_%s' % block_id)
-        code = codegen.to_source(file_ast)
+        code = astor.to_source(file_ast)
         program = os.path.join(self.job_dir, 'job.py')
         with open(program, 'w') as file:
             file.write(code)
-        job_process = JobProcess(self, self.id)
-        reactor.spawnProcess(job_process,
-                             'python', ['python', program],
-                             env=os.environ)
+        self.job_process = JobProcess(self, self.id)
+        reactor.spawnProcess(
+            self.job_process, sys.executable,
+            [sys.executable, program], env=os.environ)
 
     def processState(self, state):
         self.state = state
@@ -144,26 +162,33 @@ class JobHandler(Resource):
         log.msg('Job Finished %s' % self.id)
         self.state = state
         self.finished = datetime.datetime.now()
-
-        state_file = os.path.join(self.job_dir, 'job.state')
-        open(state_file, 'w').write(json.dumps(self.state_dict()))
+        # Write process state
+        state = self.state_dict()
+        del state['result']
+        open(self.state_file, 'w').write(json.dumps(state))
         self.handler.unregisterJob(self)
 
     def state_dict(self):
-        return {'state': self.state,
-                'started': self.started.isoformat() if self.finished else None,
-                'finished': self.finished.isoformat() if self.finished else None}
-
-    def state_file(self):
-        state_file = os.path.join(self.job_dir, 'job.state')
-        return json.load(open(state_file))
+        state = {'state': self.state,
+                 'id': self.id,
+                 'started': self.started.isoformat() if self.finished else None,
+                 'finished': self.finished.isoformat() if self.finished else None}
+        if os.path.exists(self.result_file):
+            result = json.load(open(self.result_file))
+            state['result'] = result
+        return state
 
     def render_GET(self, request):
         request.setHeader("Access-Control-Allow-Origin", "*")
         request.setHeader("content-type", "application/json")
         if self.state == 'finished':
-            return json.dumps(self.state_file())
-        return json.dumps(self.state_dict())
+            return json.dumps(self.state_dict())
+        d = self.job_process.wait_for()
+        def return_state(result):
+            request.write(json.dumps(self.state_dict()))
+            request.finish()
+        d.addCallback(return_state)
+        return NOT_DONE_YET
 
 
 class JobsHandler(Resource):

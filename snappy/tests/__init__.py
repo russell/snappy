@@ -1,8 +1,8 @@
-from xml.sax.handler import ContentHandler
-
-import codegen
 from StringIO import StringIO
+from xml.sax.handler import ContentHandler
 import lxml
+
+import astor
 
 from snappy import parser as snap_parser
 
@@ -18,7 +18,7 @@ class BlockParser():
         tree = lxml.etree.parse(StringIO(self.xml))
         lxml.sax.saxify(tree, parser)
         ctx = parser.create_context()
-        self.assertEqual([codegen.to_source(a)
+        self.assertEqual([astor.to_source(a)
                           for a in parser.children[0].to_ast(ctx)],
                          [self.code])
         # There will be a remainder while testing, due to the manually

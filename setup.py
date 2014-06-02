@@ -22,9 +22,12 @@ setup(name='snappy',
           'nose',
           'twisted',
           'mock',
-          'codegen',
+          'astor',
+          'requests',
       ],
       entry_points="""
       # -*- Entry points: -*-
+      [console_scripts]
+      snappy-client = snappy.client:main
       """,
       )

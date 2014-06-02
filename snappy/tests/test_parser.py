@@ -1,7 +1,10 @@
-import os
 from os import path
-import unittest
 import difflib
+import os
+import unittest
+
+import astor
+
 from snappy import tests
 from snappy import parser
 
@@ -57,7 +60,7 @@ class TestdoSetVarListParser(tests.BlockParser, unittest.TestCase):
     </block>
     """
 
-    code = "_vars['result'] = []"
+    code = "_vars['result'] = stdlib.doReport([])"
 
 
 class TestdoChangeVar(tests.BlockParser, unittest.TestCase):
@@ -70,7 +73,7 @@ class TestdoChangeVar(tests.BlockParser, unittest.TestCase):
     </block>
     """
 
-    code = "_vars['i'] = _vars['i'] + 1"
+    code = "_vars['i'] = (_vars['i'] + 1)"
 
 
 class TestreportTrue(tests.BlockParser, unittest.TestCase):
@@ -80,7 +83,7 @@ class TestreportTrue(tests.BlockParser, unittest.TestCase):
     <block s="reportTrue"/>
     """
 
-    code = 'True'
+    code = "stdlib.doReport(True)"
 
 
 class TestreportNot(tests.BlockParser, unittest.TestCase):
@@ -92,8 +95,7 @@ class TestreportNot(tests.BlockParser, unittest.TestCase):
     </block>
     """
 
-    code = '(not True)'
-
+    code = "stdlib.doReport((not stdlib.doReport(True)))"
 
 class TestreportNewList(tests.BlockParser, unittest.TestCase):
     parser = parser.reportNewList
@@ -108,7 +110,7 @@ class TestreportNewList(tests.BlockParser, unittest.TestCase):
     </block>
     """
 
-    code = "['a', 'b', 10]"
+    code = "stdlib.doReport(['a', 'b', 10])"
 
 
 class TestreportAnd(tests.BlockParser, unittest.TestCase):
@@ -121,7 +123,7 @@ class TestreportAnd(tests.BlockParser, unittest.TestCase):
     </block>
     """
 
-    code = "(word1 and word2)"
+    code = "stdlib.doReport((word1 and word2))"
 
 
 class TestreportEquals(tests.BlockParser, unittest.TestCase):
@@ -134,7 +136,7 @@ class TestreportEquals(tests.BlockParser, unittest.TestCase):
     </block>
     """
 
-    code = "(1 == 2)"
+    code = "stdlib.doReport(stdlib.equals(1, 2))"
 
 
 class TestreportLetter(tests.BlockParser, unittest.TestCase):
@@ -147,7 +149,7 @@ class TestreportLetter(tests.BlockParser, unittest.TestCase):
     </block>
     """
 
-    code = "word[1 - 1]"
+    code = "stdlib.doReport(word[(1 - 1)])"
 
 
 class TestdoInsertInList(tests.BlockParser, unittest.TestCase):
@@ -241,8 +243,7 @@ class TestdoIf(tests.BlockParser, unittest.TestCase):
     </block>
     """
 
-    code = """if True:
-    _vars['i'] = 0"""
+    code = "if stdlib.doReport(True):\n    _vars['i'] = 0"
 
 
 class TestdoIfPass(tests.BlockParser, unittest.TestCase):
@@ -255,8 +256,7 @@ class TestdoIfPass(tests.BlockParser, unittest.TestCase):
     </block>
     """
 
-    code = """if True:
-    pass"""
+    code = "if stdlib.doReport(True):\n    pass"
 
 
 class TestdoForEach(tests.BlockParser, unittest.TestCase):
@@ -313,8 +313,6 @@ class TestBlockDefinition(tests.BlockParser, unittest.TestCase):
         self.assertEqual(block.category, 'list')
         self.assertEqual(block.function_arguments, ['data'])
 
-import codegen
-
 
 class TestArgumentParser(unittest.TestCase):
     pass
@@ -326,7 +324,7 @@ class TestBlockParser(unittest.TestCase):
         super(TestBlockParser, self).setUp()
 
     def assertAST(self, ast, string):
-        ast_string = codegen.to_source(ast)
+        ast_string = astor.to_source(ast)
         try:
             self.assertEqual(ast_string, string)
         except:
@@ -352,11 +350,11 @@ class TestBlockParser(unittest.TestCase):
         self.assertAST(ast,
                    '''def wh_words_words_(words):
     _vars = {}
-    _vars['result'] = []
+    _vars['result'] = stdlib.doReport([])
     for word in words:
-        if ((word[1 - 1] == 'w') and (word[2 - 1] == 'h')):
+        if stdlib.doReport((stdlib.doReport(_equals(stdlib.doReport(word[(1 - 1)]), 'w')) and stdlib.doReport(_equals(stdlib.doReport(word[(2 - 1)]), 'h')))):
             _vars['result'].append(word)
-    return _doReport(_vars['result'], 'wh_words_words_')''')
+    return stdlib.doReport(_vars['result'])''')
 
     def test_for_function(self):
         filename = path.join(SAMPLE_PROGRAMS, 'wh_words.xml')
@@ -366,16 +364,16 @@ class TestBlockParser(unittest.TestCase):
         self.assertAST(ast,
                     '''def for_i_start_to_end_action_(i, start, end, action):
     _vars = {}
-    if (start > end):
-        _vars['step'] = -1
-        _vars['tester'] = lambda : (i < end)
+    if stdlib.doReport((start > end)):
+        _vars['step'] = (-1)
+        _vars['tester'] = (lambda : stdlib.doReport((i < end)))
     else:
         _vars['step'] = 1
-        _vars['tester'] = lambda : (i > end)
+        _vars['tester'] = (lambda : stdlib.doReport((i > end)))
     i = start
     while (not _vars['tester']()):
         action(i, start, end, action)
-        i = i + _vars['step']''')
+        i = (i + _vars['step'])''')
 
     def test_sentence_list(self):
         filename = path.join(SAMPLE_PROGRAMS, 'wh_words.xml')
@@ -387,21 +385,21 @@ class TestBlockParser(unittest.TestCase):
     _vars = {}
 
     def custom_block_0(i, start, end, action):
-        if (text[i - 1] == ' '):
-            if (not (_vars['thisword'] == _vars['emptyword'])):
+        if stdlib.doReport(_equals(stdlib.doReport(text[(i - 1)]), ' ')):
+            if stdlib.doReport((not stdlib.doReport(_equals(_vars['thisword'], _vars['emptyword'])))):
                 _vars['result'].append(_vars['thisword'])
                 _vars['thisword'] = _vars['emptyword']
         else:
-            _vars['thisword'] = _vars['thisword'] + text[i - 1]
-    _vars['result'] = []
+            _vars['thisword'] = stdlib.doReport((_vars['thisword'] + stdlib.doReport(text[(i - 1)])))
+    _vars['result'] = stdlib.doReport([])
     _vars['thisword'] = ''
     _vars['emptyword'] = ''
-    for_i_start_to_end_action_('i', 1, len(text), custom_block_0)
-    if (not (_vars['thisword'] == _vars['emptyword'])):
+    for_i_start_to_end_action_('i', 1, stdlib.doReport(len(text)), custom_block_0)
+    if stdlib.doReport((not stdlib.doReport(_equals(_vars['thisword'], _vars['emptyword'])))):
         _vars['result'].append(_vars['thisword'])
-    return _doReport(_vars['result'], 'sentence_list_text_')''')
+    return stdlib.doReport(_vars['result'])''')
 
-    # def test_wh_words_render_file(self):
+    def test_wh_words_render_file(self):
 
     #     filename = path.join(SAMPLE_PROGRAMS, 'wh_words.xml')
     #     p = parser.parse(filename)

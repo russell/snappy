@@ -17,35 +17,17 @@ LAST = -1
 SCRIPT_HEADER = """
 
 import logging
-import collections
+from snappy import stdlib
 
 LOG = logging.getLogger(__file__)
 logging.basicConfig(level=logging.DEBUG)
 LOG.info('Started')
 
-_report = {'result': None}
-
-def _equals(a, b):
-    if isinstance(a, (str, unicode)) and isinstance(b, (str, unicode)):
-       return a.lower() == b.lower()
-    return a == b
-
-
-def _doReport(result, name=None):
-    _report['result'] = result
-    return result
-
-def _dumpReport():
-    import json
-    import os
-    result_file = os.path.join(os.path.dirname(__file__), 'result.json')
-    result = open(result_file, 'w')
-    result.write(json.dumps(_report['result']))
 
 """
 
 SCRIPT_FOOTER = """
-_dumpReport()
+stdlib.dumpReport(__file__)
 LOG.info('Finished')
 """
 
@@ -75,6 +57,12 @@ def find_first(node, rstack):
             if remainder:
                 return find_first(child, remainder)
             return child
+
+
+def stdlib_call(fn, args):
+    module = ast.Name('stdlib', ast.Load())
+    func = ast.Attribute(value=module, attr=fn)
+    return ast.Call(func, args, [], None, None)
 
 
 class Tag(object):
@@ -189,10 +177,7 @@ class BaseReporter(Block):
         raise NotImplemented()
 
     def to_ast(self, ctx):
-        func = ast.Name('_doReport', ast.Load())
-        args = [self.report_ast(ctx),
-                ast.Str(self.__class__.__name__)]
-        return ast.Call(func, args, [], None, None)
+        return stdlib_call('doReport', [self.report_ast(ctx)])
 
 
 class reportTrue(BaseReporter):
@@ -227,10 +212,9 @@ class reportEquals(operatorBlock):
     operator = ast.Eq
 
     def report_ast(self, ctx):
-        func = ast.Name('_equals', ast.Load())
         args = [self.children[0].to_ast(ctx),
                 self.children[1].to_ast(ctx)]
-        return ast.Call(func, args, [], None, None)
+        return stdlib_call('equals', args)
 
 class reportGreaterThan(operatorBlock):
     operator = ast.Gt
@@ -339,17 +323,14 @@ class doDeclareVariables(Block):
         return None
 
 
-class doReport(Block):
+class doReport(BaseReporter):
 
     def report_ast(self, ctx):
         return self.children[0].to_ast(ctx)
 
     def to_ast(self, ctx):
-        func = ast.Name('_doReport', ast.Load())
-        args = [self.report_ast(ctx),
-                ast.Str(ctx.function.function_name)]
-        return ast.Return(ast.Call(func, args, [], None, None))
-
+        value = super(doReport, self).to_ast(ctx)
+        return ast.Return(value)
 
 class doIf(Block):
 
