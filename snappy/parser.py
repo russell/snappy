@@ -20,11 +20,13 @@ import logging
 import collections
 
 LOG = logging.getLogger(__file__)
+logging.basicConfig(level=logging.DEBUG)
 LOG.info('Started')
 
 _report = {}
 
 def _doReport(result, name):
+    LOG.debug('Result: %s %s' % (name, result))
     _report['result'] = (name, result)
     return result
 

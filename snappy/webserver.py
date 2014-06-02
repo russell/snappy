@@ -138,7 +138,6 @@ class JobHandler(Resource):
         self.finished = datetime.datetime.now()
 
         state_file = os.path.join(self.job_dir, 'job.state')
-        log.msg(json.dumps(self.state_dict()))
         open(state_file, 'w').write(json.dumps(self.state_dict()))
         self.handler.unregisterJob(self)
 
