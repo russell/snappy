@@ -27,7 +27,7 @@ _report = {'result': None}
 
 def _doReport(result, name):
     LOG.debug('Result: %s %s' % (name, result))
-    _report['result'] = (name, result)
+    _report['result'] = result
     return result
 
 def _dumpReport():
