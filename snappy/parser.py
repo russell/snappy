@@ -232,7 +232,7 @@ class reportLessThan(operatorBlock):
 
 class reportNewList(BaseReporter):
 
-    def to_ast(self, ctx):
+    def report_ast(self, ctx):
         variables = self.find_child(['list'])
         return ast.List([v.to_ast(ctx) for v in variables.children],
                         ast.Load())
@@ -240,7 +240,7 @@ class reportNewList(BaseReporter):
 
 class reportJoinWords(BaseReporter):
 
-    def to_ast(self, ctx):
+    def report_ast(self, ctx):
         args = self.children[0].children
         left = args[0].to_ast(ctx)
         for right in args[1:]:
@@ -251,7 +251,7 @@ class reportJoinWords(BaseReporter):
 
 class reportLetter(BaseReporter):
 
-    def to_ast(self, ctx):
+    def report_ast(self, ctx):
         index = ast.Index(ast.BinOp(self.children[0].to_ast(ctx),
                                     ast.Sub(), ast.Num(1)))
         variable = self.children[1].to_ast(ctx)
@@ -260,7 +260,7 @@ class reportLetter(BaseReporter):
 
 class reportStringSize(BaseReporter):
 
-    def to_ast(self, ctx):
+    def report_ast(self, ctx):
         value = self.children[0].to_ast(ctx)
         args = [value]
         func = ast.Name('len', ast.Load())
