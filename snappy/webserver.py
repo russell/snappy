@@ -147,8 +147,8 @@ class JobHandler(Resource):
 
     def state_dict(self):
         return {'state': self.state,
-                'started': self.started.isoformat(),
-                'finished': self.finished.isoformat()}
+                'started': self.started.isoformat() if self.finished else None,
+                'finished': self.finished.isoformat() if self.finished else None}
 
     def state_file(self):
         state_file = os.path.join(self.job_dir, 'job.state')
