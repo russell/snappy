@@ -26,7 +26,7 @@ LOG.info('Started')
 _report = {'result': None}
 
 def _equals(a, b):
-    if isinstance(a, (string, unicode)) and isinstance(b, (string, unicode)):
+    if isinstance(a, (str, unicode)) and isinstance(b, (str, unicode)):
        return a.lower() == b.lower()
     return a == b
 
