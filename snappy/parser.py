@@ -25,8 +25,13 @@ LOG.info('Started')
 
 _report = {'result': None}
 
-def _doReport(result, name):
-    LOG.debug('Result: %s %s' % (name, result))
+def _equals(a, b):
+    if isinstance(a, (string, unicode)) and isinstance(b, (string, unicode)):
+       return a.lower() == b.lower()
+    return a == b
+
+
+def _doReport(result, name=None):
     _report['result'] = result
     return result
 
@@ -221,6 +226,11 @@ class operatorBlock(BaseReporter):
 class reportEquals(operatorBlock):
     operator = ast.Eq
 
+    def report_ast(self, ctx):
+        func = ast.Name('_equals', ast.Load())
+        args = [self.children[0].to_ast(ctx),
+                self.children[1].to_ast(ctx)]
+        return ast.Call(func, args, [], None, None)
 
 class reportGreaterThan(operatorBlock):
     operator = ast.Gt
