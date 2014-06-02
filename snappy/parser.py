@@ -178,29 +178,40 @@ class PassBlock(Block):
         return ast.Pass()
 
 
-class reportTrue(Block):
+class BaseReporter(Block):
+
+    def report_ast(self, ctx):
+        raise NotImplemented()
 
     def to_ast(self, ctx):
-        # NOTE needs to be wrapped it a ast.Expr([]) in some cases.
+        func = ast.Name('_doReport', ast.Load())
+        args = [self.report_ast(ctx),
+                ast.Str(self.__class__.__name__)]
+        return ast.Call(func, args, [], None, None)
+
+
+class reportTrue(BaseReporter):
+
+    def report_ast(self, ctx):
         return ast.Name('True', ast.Load())
 
 
-class reportNot(Block):
+class reportNot(BaseReporter):
 
-    def to_ast(self, ctx):
+    def report_ast(self, ctx):
         return ast.UnaryOp(ast.Not(), self.children[0].to_ast(ctx))
 
 
-class reportAnd(Block):
+class reportAnd(BaseReporter):
 
-    def to_ast(self, ctx):
+    def report_ast(self, ctx):
         return ast.BoolOp(ast.And(), [v.to_ast(ctx) for v in self.children])
 
 
-class operatorBlock(Block):
+class operatorBlock(BaseReporter):
     operator = None
 
-    def to_ast(self, ctx):
+    def report_ast(self, ctx):
         assert self.operator
         return ast.Compare(self.children[0].to_ast(ctx),
                            [self.operator()],
@@ -219,7 +230,7 @@ class reportLessThan(operatorBlock):
     operator = ast.Lt
 
 
-class reportNewList(Block):
+class reportNewList(BaseReporter):
 
     def to_ast(self, ctx):
         variables = self.find_child(['list'])
@@ -227,7 +238,7 @@ class reportNewList(Block):
                         ast.Load())
 
 
-class reportJoinWords(Block):
+class reportJoinWords(BaseReporter):
 
     def to_ast(self, ctx):
         args = self.children[0].children
@@ -238,7 +249,7 @@ class reportJoinWords(Block):
         return left
 
 
-class reportLetter(Block):
+class reportLetter(BaseReporter):
 
     def to_ast(self, ctx):
         index = ast.Index(ast.BinOp(self.children[0].to_ast(ctx),
@@ -247,7 +258,7 @@ class reportLetter(Block):
         return ast.Subscript(variable, index, ast.Load())
 
 
-class reportStringSize(Block):
+class reportStringSize(BaseReporter):
 
     def to_ast(self, ctx):
         value = self.children[0].to_ast(ctx)
@@ -320,9 +331,12 @@ class doDeclareVariables(Block):
 
 class doReport(Block):
 
+    def report_ast(self, ctx):
+        return self.children[0].to_ast(ctx)
+
     def to_ast(self, ctx):
         func = ast.Name('_doReport', ast.Load())
-        args = [self.children[0].to_ast(ctx),
+        args = [self.report_ast(ctx),
                 ast.Str(ctx.function.function_name)]
         return ast.Return(ast.Call(func, args, [], None, None))
 
