@@ -23,7 +23,7 @@ LOG = logging.getLogger(__file__)
 logging.basicConfig(level=logging.DEBUG)
 LOG.info('Started')
 
-_report = {}
+_report = {'result': None}
 
 def _doReport(result, name):
     LOG.debug('Result: %s %s' % (name, result))
