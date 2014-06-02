@@ -31,6 +31,7 @@ class NoResource(Resource):
 
     def render_GET(self, request):
         request.setHeader("content-type", "application/json")
+        request.setResponseCode(404)
         return json.dumps({'error': "Resource Not Found."})
 
 
