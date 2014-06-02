@@ -702,10 +702,12 @@ class BlockParser(ContentHandler):
 
         counter = itertools.count().next
         args = ast.arguments([], None, None, [])
-
-        self._scripts = [ast.FunctionDef('main_' + str(counter()),
-                                         args, script.to_ast(ctx), [])
-                         for script in scripts.children or [PassBlock()]]
+        vars = ast.Expr(ast.Assign([ast.Name('_vars', ast.Load())], ast.Dict([], [])))
+        self._scripts = []
+        for script in scripts.children:
+            self._scripts.append(
+                ast.FunctionDef('main_' + str(counter()),
+                                args, [vars] + script.to_ast(ctx), []))
 
         return self._scripts
 
