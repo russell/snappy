@@ -1,5 +1,4 @@
 import ast
-import codegen
 import copy
 import re
 import itertools
