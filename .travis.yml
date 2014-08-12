@@ -1,0 +1,12 @@
+language: python
+install:
+  - pip install tox --use-mirrors
+script:
+  - tox
+env:
+  - TOXENV=py27
+  - TOXENV=pypy
+  - TOXENV=py27-tw140
+  - TOXENV=py27-tw132
+  - TOXENV=py27-tw131
+  - TOXENV=py27-tw130
