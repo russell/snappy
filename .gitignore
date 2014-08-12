@@ -1,2 +1,4 @@
 /snappy.egg-info/
 /jobs/
+/.tox/
+/_trial_temp/
