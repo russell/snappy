@@ -352,7 +352,7 @@ class TestBlockParser(unittest.TestCase):
     _vars = {}
     _vars['result'] = stdlib.doReport([])
     for word in words:
-        if stdlib.doReport((stdlib.doReport(_equals(stdlib.doReport(word[(1 - 1)]), 'w')) and stdlib.doReport(_equals(stdlib.doReport(word[(2 - 1)]), 'h')))):
+        if stdlib.doReport((stdlib.doReport(stdlib.equals(stdlib.doReport(word[(1 - 1)]), 'w')) and stdlib.doReport(stdlib.equals(stdlib.doReport(word[(2 - 1)]), 'h')))):
             _vars['result'].append(word)
     return stdlib.doReport(_vars['result'])''')
 
@@ -385,8 +385,8 @@ class TestBlockParser(unittest.TestCase):
     _vars = {}
 
     def custom_block_0(i, start, end, action):
-        if stdlib.doReport(_equals(stdlib.doReport(text[(i - 1)]), ' ')):
-            if stdlib.doReport((not stdlib.doReport(_equals(_vars['thisword'], _vars['emptyword'])))):
+        if stdlib.doReport(stdlib.equals(stdlib.doReport(text[(i - 1)]), ' ')):
+            if stdlib.doReport((not stdlib.doReport(stdlib.equals(_vars['thisword'], _vars['emptyword'])))):
                 _vars['result'].append(_vars['thisword'])
                 _vars['thisword'] = _vars['emptyword']
         else:
@@ -395,15 +395,14 @@ class TestBlockParser(unittest.TestCase):
     _vars['thisword'] = ''
     _vars['emptyword'] = ''
     for_i_start_to_end_action_('i', 1, stdlib.doReport(len(text)), custom_block_0)
-    if stdlib.doReport((not stdlib.doReport(_equals(_vars['thisword'], _vars['emptyword'])))):
+    if stdlib.doReport((not stdlib.doReport(stdlib.equals(_vars['thisword'], _vars['emptyword'])))):
         _vars['result'].append(_vars['thisword'])
     return stdlib.doReport(_vars['result'])''')
 
     def test_wh_words_render_file(self):
 
-    #     filename = path.join(SAMPLE_PROGRAMS, 'wh_words.xml')
-    #     p = parser.parse(filename)
-    #     ctx = p.create_context()
-    #     file_ast = p.to_ast(ctx, 'main_0')
-    #     print codegen.to_source(file_ast)
-    #     raise Exception()
+        filename = path.join(SAMPLE_PROGRAMS, 'wh_words.xml')
+        p = parser.parse(filename)
+        ctx = p.create_context()
+        file_ast = p.to_ast(ctx, 'main_0')
+        print astor.to_source(file_ast)
