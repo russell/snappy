@@ -1,5 +1,4 @@
 from StringIO import StringIO
-from xml.sax.handler import ContentHandler
 import lxml
 
 import astor
