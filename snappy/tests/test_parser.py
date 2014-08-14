@@ -12,46 +12,35 @@ from snappy import parser
 SAMPLE_PROGRAMS = path.join(path.dirname(__file__), 'sample_programs')
 
 
-class TestNamedBlock(tests.BlockParser, unittest.TestCase):
-    parser = parser.NamedBlock
-
-    xml = """
-    <block var="hello"/>
-    """
-
-    code = 'hello'
-
-
 class TestdoSetVarParser(tests.BlockParser, unittest.TestCase):
     parser = parser.doSetVar
 
-    xml = """
+    script = """
     <block s="doSetVar">
       <l>i</l>
       <l>hello</l>
     </block>
     """
 
-    code = "_vars['i'] = 'hello'"
+    vars = {'i': 'hello'}
 
 
 class TestdoSetVarIntParser(tests.BlockParser, unittest.TestCase):
     parser = parser.doSetVar
 
-    xml = """
+    script = """
     <block s="doSetVar">
       <l>i</l>
       <l>4</l>
     </block>
     """
-
-    code = "_vars['i'] = 4"
+    vars = {'i': 4}
 
 
 class TestdoSetVarListParser(tests.BlockParser, unittest.TestCase):
     parser = parser.doSetVar
 
-    xml = """
+    script = """
     <block s="doSetVar">
       <l>result</l>
       <block s="reportNewList">
@@ -60,47 +49,52 @@ class TestdoSetVarListParser(tests.BlockParser, unittest.TestCase):
     </block>
     """
 
-    code = "_vars['result'] = stdlib.doReport([])"
+    report = {'result': []}
 
 
 class TestdoChangeVar(tests.BlockParser, unittest.TestCase):
     parser = parser.doChangeVar
 
-    xml = """
+    script = """
+    <block s="doSetVar">
+      <l>i</l>
+      <l>4</l>
+    </block>
     <block s="doChangeVar">
       <l>i</l>
-      <l>1</l>
+      <l>6</l>
     </block>
     """
 
-    code = "_vars['i'] = (_vars['i'] + 1)"
+    vars = {'i': 10}
 
 
 class TestreportTrue(tests.BlockParser, unittest.TestCase):
     parser = parser.reportTrue
 
-    xml = """
+    script = """
     <block s="reportTrue"/>
     """
 
-    code = "stdlib.doReport(True)"
+    report = {'result': True}
 
 
 class TestreportNot(tests.BlockParser, unittest.TestCase):
     parser = parser.reportNot
 
-    xml = """
+    script = """
     <block s="reportNot">
       <block s="reportTrue"/>
     </block>
     """
 
-    code = "stdlib.doReport((not stdlib.doReport(True)))"
+    report = {'result': False}
+
 
 class TestreportNewList(tests.BlockParser, unittest.TestCase):
     parser = parser.reportNewList
 
-    xml = """
+    script = """
     <block s="reportNewList">
       <list>
         <l>a</l>
@@ -110,190 +104,265 @@ class TestreportNewList(tests.BlockParser, unittest.TestCase):
     </block>
     """
 
-    code = "stdlib.doReport(['a', 'b', 10])"
+    report = {'result': ['a', 'b', 10]}
 
 
 class TestreportAnd(tests.BlockParser, unittest.TestCase):
     parser = parser.reportAnd
 
-    xml = """
+    script = """
     <block s="reportAnd">
-      <block var="word1"/>
-      <block var="word2"/>
+      <block s="reportNot">
+        <block s="reportTrue"/>
+      </block>
+      <block s="reportTrue"/>
     </block>
     """
 
-    code = "stdlib.doReport((word1 and word2))"
+    report = {'result': False}
 
 
 class TestreportEquals(tests.BlockParser, unittest.TestCase):
     parser = parser.reportEquals
 
-    xml = """
+    script = """
     <block s="reportEquals">
       <l>1</l>
       <l>2</l>
     </block>
     """
 
-    code = "stdlib.doReport(stdlib.equals(1, 2))"
+    report = {'result': False}
 
 
 class TestreportLetter(tests.BlockParser, unittest.TestCase):
     parser = parser.reportLetter
 
-    xml = """
+    script = """
     <block s="reportLetter">
       <l>1</l>
-      <block var="word"/>
+      <l>word</l>
     </block>
     """
 
-    code = "stdlib.doReport(word[(1 - 1)])"
+    report = {'result': 'w'}
+
 
 
 class TestdoInsertInList(tests.BlockParser, unittest.TestCase):
     parser = parser.doInsertInList
 
-    xml = """
+    script = """
+    <block s="doDeclareVariables">
+      <list>
+        <l>i</l>
+      </list>
+    </block>
+    <block s="doSetVar">
+      <l>i</l>
+      <block s="reportNewList">
+        <list>
+          <l>10</l>
+        </list>
+      </block>
+    </block>
     <block s="doInsertInList">
-      <block var="word"/>
+      <l>word</l>
       <l>
         <option>last</option>
       </l>
-      <block var="result"/>
+      <block var="i"/>
     </block>
     """
 
-    code = "result.append(word)"
+    report = {'result': [10, 'word']}
 
 
 class TestdoInsertInList1(tests.BlockParser, unittest.TestCase):
     parser = parser.doInsertInList
 
-    xml = """
+    script = """
+    <block s="doDeclareVariables">
+      <list>
+        <l>i</l>
+      </list>
+    </block>
+    <block s="doSetVar">
+      <l>i</l>
+      <block s="reportNewList">
+        <list>
+          <l>10</l>
+        </list>
+      </block>
+    </block>
     <block s="doInsertInList">
-      <block var="word"/>
+      <l>word</l>
       <l>
         <option>1</option>
       </l>
-      <block var="result"/>
+      <block var="i"/>
     </block>
     """
 
-    code = "result.insert(0, word)"
+    report = {'result': ['word', 10]}
 
 
 class TestdoInsertInListAny(tests.BlockParser, unittest.TestCase):
     parser = parser.doInsertInList
 
-    xml = """
+    script = """
+    <block s="doDeclareVariables">
+      <list>
+        <l>i</l>
+      </list>
+    </block>
+    <block s="doSetVar">
+      <l>i</l>
+      <block s="reportNewList">
+        <list>
+          <l>10</l>
+        </list>
+      </block>
+    </block>
     <block s="doInsertInList">
-      <block var="word"/>
+      <l>word</l>
       <l>
         <option>any</option>
       </l>
-      <block var="result"/>
+      <block var="i"/>
     </block>
     """
 
-    code = "result.append(word)"
+    report = {'result': [10, 'word']}
 
 
 class TestdoAddToList(tests.BlockParser, unittest.TestCase):
     parser = parser.doAddToList
 
-    xml = """
-    <block s="doAddToList">
-      <block var="thisword"/>
-      <block var="result"/>
-    </block>
-    """
-
-    code = "result.append(thisword)"
-
-
-class TestdoDeclareVariablesParser(tests.BlockParser, unittest.TestCase):
-    parser = parser.doDeclareVariables
-
-    xml = """
+    script = """
     <block s="doDeclareVariables">
       <list>
-        <l>mapone</l>
-        <l>mapmany</l>
+        <l>i</l>
       </list>
+    </block>
+    <block s="doSetVar">
+      <l>i</l>
+      <block s="reportNewList">
+        <list>
+          <l>10</l>
+        </list>
+      </block>
+    </block>
+    <block s="doAddToList">
+      <l>this word</l>
+      <block var="i"/>
     </block>
     """
 
-    code = ''
+    report = {'result': [10, 'this word']}
 
 
 class TestdoIf(tests.BlockParser, unittest.TestCase):
     parser = parser.doIf
 
-    xml = """
+    script = """
     <block s="doIf">
       <block s="reportTrue"/>
       <script>
         <block s="doSetVar">
-          <l>i</l>
-          <l>0</l>
+          <l>test</l>
+          <l>true</l>
         </block>
       </script>
     </block>
     """
-
-    code = "if stdlib.doReport(True):\n    _vars['i'] = 0"
+    vars = {'test': 'true'}
 
 
 class TestdoIfPass(tests.BlockParser, unittest.TestCase):
     parser = parser.doIf
 
-    xml = """
-    <block s="doIf">
-      <block s="reportTrue"/>
-      <script/>
+    script = """
+     <block s="doIf">
+       <block s="reportTrue"/>
+       <script/>
+     </block>
+     <block s="doSetVar">
+       <l>test</l>
+       <l>true</l>
     </block>
     """
 
-    code = "if stdlib.doReport(True):\n    pass"
-
+    vars = {'test': 'true'}
 
 class TestdoForEach(tests.BlockParser, unittest.TestCase):
     parser = parser.doForEach
 
-    xml = """
+    script = """
+    <block s="doDeclareVariables">
+      <list>
+        <l>i</l>
+        <l>words</l>
+      </list>
+    </block>
+    <block s="doSetVar">
+      <l>words</l>
+      <block s="reportNewList">
+        <list>
+          <l>a</l>
+          <l>b</l>
+          <l>10</l>
+        </list>
+      </block>
+    </block>
+    <block s="doSetVar">
+      <l>i</l>
+      <l>0</l>
+    </block>
     <block s="doForEach">
       <l>word</l>
       <block var="words"/>
       <script>
+        <block s="doChangeVar">
+          <l>i</l>
+          <l>1</l>
+        </block>
       </script>
+    </block>
+    <block s="doReport">
+      <block var="i"/>
     </block>
     """
 
-    code = """for word in words:
-    pass"""
+    report = {'result': 3}
+
 
 
 class TestBlockDefinition(tests.BlockParser, unittest.TestCase):
     parser = parser.BlockDefinition
 
-    xml = """
-    <block-definition s="empty? %&apos;data&apos;"
-                      type="reporter" category="lists">
+    block = """
+    <block-definition s="print %'data'" type="reporter" category="operators">
       <header/>
       <code/>
       <inputs>
-        <input type="%l"/>
+        <input type="%s"/>
       </inputs>
       <script>
+        <block s="doReport">
+          <block var="data"/>
+        </block>
       </script>
-      <password/>
-      <salt/>
     </block-definition>
     """
 
-    code = "def empty_data_(data):\n    pass"
+    script = """
+    <custom-block s="print %s">
+      <l>Hello World</l>
+    </custom-block>
+    """
+
+    report = {'result': 'Hello World'}
 
     def test_arg_parsing(self):
         block = self.parser('block-definition', None,
@@ -399,10 +468,10 @@ class TestBlockParser(unittest.TestCase):
         _vars['result'].append(_vars['thisword'])
     return stdlib.doReport(_vars['result'])''')
 
-    def test_wh_words_render_file(self):
+    # def test_wh_words_render_file(self):
 
-        filename = path.join(SAMPLE_PROGRAMS, 'wh_words.xml')
-        p = parser.parse(filename)
-        ctx = p.create_context()
-        file_ast = p.to_ast(ctx, 'main_0')
-        print astor.to_source(file_ast)
+    #     filename = path.join(SAMPLE_PROGRAMS, 'wh_words.xml')
+    #     p = parser.parse(filename)
+    #     ctx = p.create_context()
+    #     file_ast = p.to_ast(ctx, 'main_0')
+    #     print astor.to_source(file_ast)

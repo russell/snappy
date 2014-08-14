@@ -18,16 +18,22 @@ SCRIPT_HEADER = """
 import logging
 from snappy import stdlib
 
-LOG = logging.getLogger(__file__)
 logging.basicConfig(level=logging.DEBUG)
-LOG.info('Started')
+if '__file__' in locals():
+    LOG = logging.getLogger(__file__)
+    LOG.info('Started')
+else:
+    LOG = logging.getLogger(__name__)
 
+_vars = {}
 
 """
 
 SCRIPT_FOOTER = """
-stdlib.dumpReport(__file__)
-LOG.info('Finished')
+
+if '__file__' in locals():
+    stdlib.dumpReport(__file__, _vars)
+    LOG.info('Finished')
 """
 
 
@@ -60,7 +66,7 @@ def find_first(node, rstack):
 
 def stdlib_call(fn, args):
     module = ast.Name('stdlib', ast.Load())
-    func = ast.Attribute(value=module, attr=fn)
+    func = ast.Attribute(value=module, attr=fn, ctx=ast.Load())
     return ast.Call(func, args, [], None, None)
 
 
@@ -139,8 +145,8 @@ class LiteralBlock(Tag):
             value = ast.Str(self.text)
         return value
 
-    def to_name(self):
-        value = ast.Name(self.text, ast.Load())
+    def to_name(self, op=ast.Load()):
+        value = ast.Name(self.text, op)
         return value
 
 
@@ -155,19 +161,6 @@ class Input(Tag):
     @property
     def type(self):
         return self.attributes['type']
-
-
-class PassBlock(Block):
-
-    # TODO this block has an inconsistent definition because it's not
-    # called directly by the parser.  This should probably be changed.
-    def __init__(self):
-        self.name = "Pass"
-        self.attributes = {}
-        self.children = []
-
-    def to_ast(self, ctx):
-        return ast.Pass()
 
 
 class BaseReporter(Block):
@@ -269,10 +262,10 @@ class doInsertInList(Block):
         var = self.children[2].to_ast(ctx)
         if '1' in options:
             args = [ast.Num(0), value]
-            func = ast.Attribute(value=var, attr='insert')
+            func = ast.Attribute(value=var, attr='insert', ctx=ast.Load())
         else:  # This covers 'last' and 'any' cases
             args = [value]
-            func = ast.Attribute(value=var, attr='append')
+            func = ast.Attribute(value=var, attr='append', ctx=ast.Load())
         return ast.Call(func, args, [], None, None)
 
 
@@ -282,7 +275,7 @@ class doAddToList(Block):
         value = self.children[0].to_ast(ctx)
         var = self.children[1].to_ast(ctx)
         args = [value]
-        func = ast.Attribute(value=var, attr='append')
+        func = ast.Attribute(value=var, attr='append', ctx=ast.Load())
         return ast.Call(func, args, [], None, None)
 
 
@@ -295,7 +288,7 @@ class doSetVar(Block):
         else:
             name = ast.Name('_vars', ast.Load())
             index = ast.Index(self.children[0].to_ast(ctx))
-            var = ast.Subscript(name, index, ast.Load())
+            var = ast.Subscript(name, index, ast.Store())
         return ast.Assign([var], self.children[1].to_ast(ctx))
 
 
@@ -309,8 +302,9 @@ class doChangeVar(Block):
         else:
             name = ast.Name('_vars', ast.Load())
             index = ast.Index(self.children[0].to_ast(ctx))
-            var = ast.Subscript(name, index, ast.Load())
-            change = ast.BinOp(var, ast.Add(), self.children[1].to_ast(ctx))
+            var = ast.Subscript(name, index, ast.Store())
+            varl = ast.Subscript(name, index, ast.Load())
+            change = ast.BinOp(varl, ast.Add(), self.children[1].to_ast(ctx))
         return ast.Assign([var], change)
 
 
@@ -381,7 +375,7 @@ class doUntil(Block):
 class doForEach(Block):
 
     def to_ast(self, ctx):
-        _for = ast.For(self.children[0].to_name(),
+        _for = ast.For(self.children[0].to_name(ast.Store()),
                        self.children[1].to_ast(ctx),
                        self.children[2].to_ast(ctx),
                        [])
@@ -416,15 +410,19 @@ class Script(BaseBlock):
         return bool(self.children)
 
     def inline_node(self, node):
-        if node.__class__ not in [ast.FunctionDef, ast.For, ast.While, PassBlock]:
+        if not node:
+            return node
+        if node.__class__ not in [ast.FunctionDef, ast.For, ast.While,
+                                  ast.Pass, ast.Return, ast.If, ast.Assign]:
             return ast.Expr(node)
         else:
             return node
 
     def to_ast(self, ctx):
-        return [self.inline_node(e.to_ast(ctx))
-                for e in self.children or [PassBlock()]
-                if e]
+        nodes = [self.inline_node(e.to_ast(ctx))
+                 for e in self.children
+                 if e]
+        return [n for n in nodes if n] or [ast.Pass()]
 
 
 class BlockDefinition(BaseBlock):
@@ -440,17 +438,17 @@ class BlockDefinition(BaseBlock):
         ctx = ctx.copy()
         ctx.function = self
         name = self.function_name
-        args = ast.arguments([ast.Name(arg, ast.Load())
+        args = ast.arguments([ast.Name(arg, ast.Param())
                               for arg in self.function_arguments],
                              None, None, [])
         script = self.find_child(['script'])
         script_ast = script.to_ast(ctx)
-        vars = ast.Assign([ast.Name('_vars', ast.Load())], ast.Dict([], []))
+        vars = ast.Assign([ast.Name('_vars', ast.Store())], ast.Dict([], []))
 
         if script.has_body():
             # Put any inner functions at the start of the body.  This has
             # to happen after the body has been evaluated.
-            body = [ast.Expr(vars)] + self.inner_functions + script_ast
+            body = [vars] + self.inner_functions + script_ast
         else:
             body = script_ast
         return ast.FunctionDef(name, args, body, [])
@@ -642,6 +640,8 @@ class Context():
     def lookupCustomBlock(self, name):
         if name not in self.used_custom_blocks:
             self.used_custom_blocks.append(name)
+        if name not in self.custom_blocks:
+            raise Exception("Block '%s' not found in: %s" % (name, self.custom_blocks.keys()))
         return self.custom_blocks[name]
 
     def copy(self):
@@ -713,12 +713,14 @@ class BlockParser(ContentHandler):
 
         counter = itertools.count().next
         args = ast.arguments([], None, None, [])
-        vars = ast.Expr(ast.Assign([ast.Name('_vars', ast.Load())], ast.Dict([], [])))
+        globals = ast.Global(['_vars'])
+        vars = ast.Assign([ast.Name('_vars', ast.Store())],
+                          ast.Dict([], []))
         self._scripts = []
         for script in scripts.children:
             self._scripts.append(
                 ast.FunctionDef('main_' + str(counter()),
-                                args, [vars] + script.to_ast(ctx), []))
+                                args, [globals, vars] + script.to_ast(ctx), []))
 
         return self._scripts
 
