@@ -1,11 +1,10 @@
-import collections
 
 _report = {'result': None}
 
 
 def equals(a, b):
     if isinstance(a, basestring) and isinstance(b, basestring):
-       return a.lower() == b.lower()
+        return a.lower() == b.lower()
     return a == b
 
 
@@ -17,6 +16,7 @@ def cleanReport():
 def doReport(result, name=None):
     _report['result'] = result
     return result
+
 
 def dumpReport(script_file):
     import json

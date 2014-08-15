@@ -1,6 +1,5 @@
 from os import path
 import difflib
-import os
 import unittest
 
 import astor
@@ -146,7 +145,6 @@ class TestreportLetter(tests.BlockParser, unittest.TestCase):
     """
 
     report = {'result': 'w'}
-
 
 
 class TestdoInsertInList(tests.BlockParser, unittest.TestCase):
@@ -295,6 +293,7 @@ class TestdoIfPass(tests.BlockParser, unittest.TestCase):
 
     vars = {'test': 'true'}
 
+
 class TestdoForEach(tests.BlockParser, unittest.TestCase):
     parser = parser.doForEach
 
@@ -335,7 +334,6 @@ class TestdoForEach(tests.BlockParser, unittest.TestCase):
     """
 
     report = {'result': 3}
-
 
 
 class TestBlockDefinition(tests.BlockParser, unittest.TestCase):
@@ -417,7 +415,7 @@ class TestBlockParser(unittest.TestCase):
         ast = p.custom_blocks["wh-words %s"].to_ast(ctx)
 
         self.assertAST(ast,
-                   '''def wh_words_words_(words):
+                       '''def wh_words_words_(words):
     _vars = {}
     _vars['result'] = stdlib.doReport([])
     for word in words:
@@ -431,7 +429,7 @@ class TestBlockParser(unittest.TestCase):
         ctx = p.create_context()
         ast = p.custom_blocks["for %upvar = %n to %n %cs"].to_ast(ctx)
         self.assertAST(ast,
-                    '''def for_i_start_to_end_action_(i, start, end, action):
+                       '''def for_i_start_to_end_action_(i, start, end, action):
     _vars = {}
     if stdlib.doReport((start > end)):
         _vars['step'] = (-1)
@@ -450,7 +448,7 @@ class TestBlockParser(unittest.TestCase):
         ctx = p.create_context()
         ast = p.custom_blocks["sentence->list %txt"].to_ast(ctx)
         self.assertAST(ast,
-                    '''def sentence_list_text_(text):
+                       '''def sentence_list_text_(text):
     _vars = {}
 
     def custom_block_0(i, start, end, action):

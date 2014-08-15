@@ -1,22 +1,19 @@
-from StringIO import StringIO
-from datetime import date
-import cgi
 import datetime
 import json
 import os
-import subprocess
 import sys
 import uuid
 
 from twisted.internet import reactor, defer, protocol
 from twisted.python import log
 from twisted.web.resource import Resource
-from twisted.web.server import Site, NOT_DONE_YET
+from twisted.web.server import NOT_DONE_YET
 import astor
 
 from snappy import parser
 
 JOB_DIR = 'jobs/'
+
 
 def generate_job_id():
     while True:
@@ -25,11 +22,13 @@ def generate_job_id():
             continue
         return str(id)
 
+
 def parse_datetime(dt_str):
-    dt, _, us= dt_str.partition(".")
-    dt= datetime.datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S")
-    us= int(us.rstrip("Z"), 10)
+    dt, _, us = dt_str.partition(".")
+    dt = datetime.datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S")
+    us = int(us.rstrip("Z"), 10)
     return dt + datetime.timedelta(microseconds=us)
+
 
 class NoResource(Resource):
 
@@ -133,7 +132,7 @@ class JobHandler(Resource):
         os.mkdir(self.job_dir)
         project = json.loads(body)
 
-        sprit_id = project['sprite_idx']
+        # sprit_id = project['sprite_idx']
         block_id = project['block_idx']
 
         # Write uploaded program
@@ -171,8 +170,10 @@ class JobHandler(Resource):
     def state_dict(self):
         state = {'state': self.state,
                  'id': self.id,
-                 'started': self.started.isoformat() if self.finished else None,
-                 'finished': self.finished.isoformat() if self.finished else None}
+                 'started': (self.started.isoformat()
+                             if self.finished else None),
+                 'finished': (self.finished.isoformat()
+                              if self.finished else None)}
         if os.path.exists(self.result_file):
             result = json.load(open(self.result_file))
             state['result'] = result
@@ -184,6 +185,7 @@ class JobHandler(Resource):
         if self.state == 'finished':
             return json.dumps(self.state_dict())
         d = self.job_process.wait_for()
+
         def return_state(result):
             request.write(json.dumps(self.state_dict()))
             request.finish()

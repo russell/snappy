@@ -208,6 +208,7 @@ class reportEquals(operatorBlock):
                 self.children[1].to_ast(ctx)]
         return stdlib_call('equals', args)
 
+
 class reportGreaterThan(operatorBlock):
     operator = ast.Gt
 
@@ -325,6 +326,7 @@ class doReport(BaseReporter):
         value = super(doReport, self).to_ast(ctx)
         return ast.Return(value)
 
+
 class doIf(Block):
 
     def to_ast(self, ctx):
@@ -347,7 +349,8 @@ class Evaluate(Block):
 
     def to_ast(self, ctx):
         # TODO add argument support
-        assert not self.find_child(['list']).children, "Evaluate with arguments, isn't supported."
+        assert not self.find_child(['list']).children, \
+            "Evaluate with arguments, isn't supported."
         args = []
         func = self.children[0].to_ast(ctx)
         func_name = self.children[0].block_name
@@ -478,9 +481,6 @@ class BlockDefinition(BaseBlock):
     def function_argument_types(self):
         return [i.type for i in self.find_child(['inputs']).children]
 
-    def function_argument_type(self, arg):
-        return dict(zip(self.children, func.function_argument_types))[arg]
-
 
 class CustomBlock(BaseBlock):
     counter = itertools.count().next
@@ -520,7 +520,8 @@ def block_handler(name, qname, attributes):
     # Handle expressions
     fn = attributes.get('s')
     if fn:
-        block_parser = builtin_blocks.get(fn, NotImplementedBlock)(name, qname, attributes)
+        block = builtin_blocks.get(fn, NotImplementedBlock)
+        block_parser = block(name, qname, attributes)
         return block_parser
 
     # Handle variables
@@ -594,7 +595,7 @@ builtin_blocks = {
     'reportStringSize': reportStringSize,  # stringLength:
     # 'reportUnicode': reportUnicode,  # asciiCodeOf
     # 'reportUnicodeAsLetter': 'reportUnicodeAsLetter',  # asciiLetter
-    # 'reportModulus': reportModulus,  # \\\\
+    # 'reportModulus': reportModulus,
     # 'reportRound': reportRound,  # rounded
     # 'reportMonadic': reportMonadic,  # computeFunction:of:
     # 'reportIsA': reportIsA,  # isObject:type:
@@ -641,7 +642,8 @@ class Context():
         if name not in self.used_custom_blocks:
             self.used_custom_blocks.append(name)
         if name not in self.custom_blocks:
-            raise Exception("Block '%s' not found in: %s" % (name, self.custom_blocks.keys()))
+            raise Exception("Block '%s' not found in: %s"
+                            % (name, self.custom_blocks.keys()))
         return self.custom_blocks[name]
 
     def copy(self):
@@ -720,7 +722,9 @@ class BlockParser(ContentHandler):
         for script in scripts.children:
             self._scripts.append(
                 ast.FunctionDef('main_' + str(counter()),
-                                args, [globals, vars] + script.to_ast(ctx), []))
+                                args,
+                                [globals, vars] + script.to_ast(ctx),
+                                []))
 
         return self._scripts
 
@@ -749,9 +753,9 @@ class BlockParser(ContentHandler):
         for block in self.custom_blocks.values():
             try:
                 block_ast = block.to_ast(ctx)
-            except Exception as e:
-                # LOG.exception(e)
-                LOG.debug("Failed to generate function for %s" % block.block_name)
+            except Exception:
+                LOG.debug("Failed to generate function for %s"
+                          % block.block_name)
             else:
                 body.append(block_ast)
         if main_func:
@@ -770,6 +774,7 @@ def parse(filename):
     handler = BlockParser()
     lxml.sax.saxify(tree, handler)
     return handler
+
 
 def parses(string):
     tree = lxml.etree.parse(StringIO(string))
