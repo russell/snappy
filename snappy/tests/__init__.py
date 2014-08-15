@@ -53,24 +53,27 @@ class BlockParser():
         main = parser.scripts(ctx)
         script = parser.to_ast(ctx)
         ast.fix_missing_locations(script)
-        # print astor.to_source(script)
-        # parsed = ast.parse(astor.to_source(script))
-        # print ast.dump(script)
-        # print ast.dump(parsed)
-        code = compile(script, '<string>', 'exec')
-        module = imp.new_module(__name__ + '.compiled_block')
+        try:
+            code = compile(script, '<string>', 'exec')
+            module = imp.new_module(__name__ + '.compiled_block')
 
-        exec code in module.__dict__
-        module.main_0()
+            exec code in module.__dict__
+            module.main_0()
 
-        if self.report:
-            self.assertEqual(module.stdlib._report, self.report,
-                             "%s != %s\ncode::\n\n%s" % (module.stdlib._report,
-                                                         self.report,
-                                                         astor.to_source(script)))
-        if self.vars:
-            self.assertEqual(module._vars, self.vars,
-                             "%s != %s\ncode::\n\n%s" % (module._vars,
-                                                         self.vars,
-                                                         astor.to_source(script)))
+            if self.report:
+                self.assertEqual(module.stdlib._report, self.report,
+                                 "%s != %s\ncode::\n\n%s" % (module.stdlib._report,
+                                                             self.report,
+                                                             astor.to_source(script)))
+            if self.vars:
+                self.assertEqual(module._vars, self.vars,
+                                 "%s != %s\ncode::\n\n%s" % (module._vars,
+                                                             self.vars,
+                                                             astor.to_source(script)))
+        except:
+            print "Generated AST object\n", ast.dump(script)
+            parsed = ast.parse(astor.to_source(script))
+            print "Parsed AST object\n", ast.dump(parsed)
+            raise
+
         self.assertTrue(len(parser.stack) == 0, parser.stack)
