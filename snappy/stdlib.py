@@ -1,5 +1,6 @@
 
 _report = {'result': None}
+_vars = {}
 
 
 def equals(a, b):
@@ -10,7 +11,9 @@ def equals(a, b):
 
 def cleanReport():
     global _report
+    global _vars
     _report = {'result': None}
+    _vars = {}
 
 
 def doReport(result, name=None):

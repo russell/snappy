@@ -25,7 +25,7 @@ if '__file__' in locals():
 else:
     LOG = logging.getLogger(__name__)
 
-_vars = {}
+_vars = stdlib._vars
 
 """
 
