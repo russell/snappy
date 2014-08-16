@@ -416,17 +416,25 @@ class Script(BaseBlock):
     def inline_node(self, node):
         if not node:
             return node
-        if node.__class__ not in [ast.FunctionDef, ast.For, ast.While,
-                                  ast.Pass, ast.Return, ast.If, ast.Assign]:
-            return ast.Expr(node)
-        else:
+        if node.__class__ in [ast.FunctionDef, ast.For, ast.While,
+                              ast.Pass, ast.Return, ast.If, ast.Assign]:
             return node
+        else:
+            return ast.Expr(node)
 
     def to_ast(self, ctx):
-        nodes = [self.inline_node(e.to_ast(ctx))
-                 for e in self.children
-                 if e]
-        return [n for n in nodes if n] or [ast.Pass()]
+        r_nodes = []
+        for node in self.children:
+            node_ast = node.to_ast(ctx)
+            r_node = self.inline_node(node_ast)
+            if not r_node:
+                continue
+            if isinstance(node_ast, list):
+                r_nodes.extend(node_ast)
+            else:
+                r_nodes.append(r_node)
+
+        return r_nodes or [ast.Pass()]
 
 
 class BlockDefinition(BaseBlock):
