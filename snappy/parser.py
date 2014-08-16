@@ -553,6 +553,8 @@ class CustomBlock(BaseBlock):
             if type == '%cs':
                 name = self.to_func(ctx, func, arg_ast)
                 args.append(ast.Name(name, ast.Load()))
+            elif type == '%upvar':
+                args.append(ast.Num(0))
             else:
                 args.append(arg_ast)
         return ast.Call(ast.Name(func.function_name, ast.Load()),
