@@ -43,13 +43,19 @@ class BlockParser():
 """
 
     block = ""
+    blocks = []
     script = ""
     report = None
     vars = None
 
     def test_parse(self):
         snap_stdlib.cleanReport()
-        document = self.xml.format(script=self.script, block=self.block)
+        if self.script:
+            document = self.xml.format(
+                script=self.script,
+                block="".join(self.blocks) or self.block)
+        else:
+            document = self.xml
         parser = snap_parser.parses(document)
         ctx = parser.create_context()
         script = parser.to_ast(ctx)
