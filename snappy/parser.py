@@ -285,7 +285,7 @@ class doSetVar(Block):
     def to_ast(self, ctx):
         var = self.children[0].text
         if ctx.function and var in ctx.function.function_arguments:
-            var = ast.Name(var, ast.Load())
+            var = ast.Name(var, ast.Store())
         else:
             name = ast.Name('_vars', ast.Load())
             index = ast.Index(self.children[0].to_ast(ctx))
@@ -298,8 +298,9 @@ class doChangeVar(Block):
     def to_ast(self, ctx):
         name = self.children[0].text
         if ctx.function and name in ctx.function.function_arguments:
-            var = self.children[0].to_name()
-            change = ast.BinOp(var, ast.Add(), self.children[1].to_ast(ctx))
+            var = self.children[0].to_name(ast.Store())
+            varl = self.children[0].to_name(ast.Load())
+            change = ast.BinOp(varl, ast.Add(), self.children[1].to_ast(ctx))
         else:
             name = ast.Name('_vars', ast.Load())
             index = ast.Index(self.children[0].to_ast(ctx))
@@ -493,7 +494,7 @@ class CustomBlock(BaseBlock):
         """Append the custom block as a function into the parent functions
         scope."""
         func_name = 'custom_block_' + str(self.counter())
-        args = ast.arguments([ast.Name(arg, ast.Load())
+        args = ast.arguments([ast.Name(arg, ast.Param())
                               for arg in func.function_arguments],
                              None, None, [])
         ctx.function.inner_functions.append(
