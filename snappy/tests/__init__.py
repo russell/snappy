@@ -75,14 +75,15 @@ class BlockParser():
                                                 astor.to_source(script)))
             if self.vars:
                 self.assertEqual(
-                    module._vars, self.vars,
-                    "%s != %s\ncode::\n\n%s" % (module._vars,
+                    module._globals, self.vars,
+                    "%s != %s\ncode::\n\n%s" % (module._globals,
                                                 self.vars,
                                                 astor.to_source(script)))
         except:
             print "Generated AST object\n", ast.dump(script)
             parsed = ast.parse(astor.to_source(script))
             print "Parsed AST object\n", ast.dump(parsed)
+            print "Script\n", astor.to_source(script)
             raise
 
         self.assertTrue(len(parser.stack) == 0, parser.stack)

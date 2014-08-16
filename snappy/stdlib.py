@@ -1,6 +1,6 @@
 
 _report = {'result': None}
-_vars = {}
+_globals = {}
 
 
 def equals(a, b):
@@ -11,9 +11,9 @@ def equals(a, b):
 
 def cleanReport():
     global _report
-    global _vars
+    global _globals
     _report = {'result': None}
-    _vars = {}
+    _globals = {}
 
 
 def doReport(result, name=None):
@@ -21,7 +21,7 @@ def doReport(result, name=None):
     return result
 
 
-def dumpReport(script_file, local_vars):
+def dumpReport(script_file):
     import json
     import os
     result_file = os.path.join(os.path.dirname(script_file), 'result.json')
