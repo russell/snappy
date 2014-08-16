@@ -18,7 +18,7 @@ def doReport(result, name=None):
     return result
 
 
-def dumpReport(script_file):
+def dumpReport(script_file, local_vars):
     import json
     import os
     result_file = os.path.join(os.path.dirname(script_file), 'result.json')
