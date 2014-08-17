@@ -29,6 +29,10 @@ def reportTrue():
     return doReport(True)
 
 
+def reportFalse():
+    return doReport(False)
+
+
 def reportNot(a):
     return doReport(not a)
 
@@ -41,6 +45,10 @@ def reportEquals(a, b):
 
 def reportAnd(a, b):
     return doReport(a and b)
+
+
+def reportOr(a, b):
+    return doReport(a or b)
 
 
 def reportGreaterThan(a, b):

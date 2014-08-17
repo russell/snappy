@@ -211,11 +211,19 @@ class reportTrue(BaseReporter):
     pass
 
 
+class reportFalse(BaseReporter):
+    pass
+
+
 class reportNot(BaseReporter):
     pass
 
 
 class reportAnd(BaseReporter):
+    pass
+
+
+class reportOr(BaseReporter):
     pass
 
 
@@ -653,10 +661,10 @@ builtin_blocks = {
     'reportEquals': reportEquals,  # =
     'reportGreaterThan': reportGreaterThan,  # >
     'reportAnd': reportAnd,  # &
-    # 'reportOr': reportOr,  # |
+    'reportOr': reportOr,  # |
     'reportNot': reportNot,  # not
     'reportTrue': reportTrue,  # getTrue
-    # 'reportFalse': reportFalse,  # getFalse
+    'reportFalse': reportFalse,  # getFalse
     'reportJoinWords': reportJoinWords,  # concatenate:with:
     'reportLetter': reportLetter,  # letter:of:
     'reportStringSize': reportStringSize,  # stringLength:
