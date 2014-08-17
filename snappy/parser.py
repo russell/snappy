@@ -67,6 +67,8 @@ def find_first(node, rstack):
 def stdlib_call(fn, args):
     module = ast.Name('stdlib', ast.Load())
     func = ast.Attribute(value=module, attr=fn, ctx=ast.Load())
+    if not isinstance(args, list):
+        args = [args]
     return ast.Call(func, args, [], None, None)
 
 
@@ -173,6 +175,14 @@ class LiteralBlock(Tag):
         return value
 
 
+class List(Tag):
+
+    def to_ast(self, ctx):
+        return ast.List([v.to_ast(ctx)
+                         for v in self.children],
+                        ast.Load())
+
+
 class Option(Tag):
 
     def __repr__(self):
@@ -189,120 +199,73 @@ class Input(Tag):
 class BaseReporter(Block):
 
     def report_ast(self, ctx):
-        raise NotImplemented()
+        return [c.to_ast(ctx)
+                for c in self.children]
 
     def to_ast(self, ctx):
-        return stdlib_call('doReport', [self.report_ast(ctx)])
+        return stdlib_call(self.__class__.__name__,
+                           self.report_ast(ctx))
 
 
 class reportTrue(BaseReporter):
-
-    def report_ast(self, ctx):
-        return ast.Name('True', ast.Load())
+    pass
 
 
 class reportNot(BaseReporter):
-
-    def report_ast(self, ctx):
-        return ast.UnaryOp(ast.Not(), self.children[0].to_ast(ctx))
+    pass
 
 
 class reportAnd(BaseReporter):
-
-    def report_ast(self, ctx):
-        return ast.BoolOp(ast.And(), [v.to_ast(ctx) for v in self.children])
+    pass
 
 
-class operatorBlock(BaseReporter):
-    operator = None
-
-    def report_ast(self, ctx):
-        assert self.operator
-        return ast.Compare(self.children[0].to_ast(ctx),
-                           [self.operator()],
-                           [self.children[1].to_ast(ctx)])
+class reportEquals(BaseReporter):
+    pass
 
 
-class reportEquals(operatorBlock):
-    operator = ast.Eq
-
-    def report_ast(self, ctx):
-        args = [self.children[0].to_ast(ctx),
-                self.children[1].to_ast(ctx)]
-        return stdlib_call('equals', args)
+class reportGreaterThan(BaseReporter):
+    pass
 
 
-class reportGreaterThan(operatorBlock):
-    operator = ast.Gt
+class reportLessThan(BaseReporter):
+    pass
 
 
-class reportLessThan(operatorBlock):
-    operator = ast.Lt
+class reportLetter(BaseReporter):
+    pass
 
 
 class reportNewList(BaseReporter):
 
     def report_ast(self, ctx):
         variables = self.find_child(['list'])
-        return ast.List([v.to_ast(ctx) for v in variables.children],
+        return ast.List([v.to_ast(ctx)
+                         for v in variables.children],
                         ast.Load())
 
 
 class reportCAR(BaseReporter):
-
-    def report_ast(self, ctx):
-        index = ast.Index(ast.Num(0))
-        variable = self.children[0].to_ast(ctx)
-        var = ast.Subscript(variable, index, ast.Load())
-        return var
+    pass
 
 
 class reportCDR(BaseReporter):
-
-    def report_ast(self, ctx):
-        index = ast.Slice(ast.Num(1), None, None)
-        variable = self.children[0].to_ast(ctx)
-        var = ast.Subscript(variable, index, ast.Load())
-        return var
+    pass
 
 
 class reportCONS(BaseReporter):
-
-    def report_ast(self, ctx):
-        list1 = ast.List([self.children[0].to_ast(ctx)],
-                         ast.Load())
-        change = ast.BinOp(list1, ast.Add(), self.children[1].to_ast(ctx))
-        return change
+    pass
 
 
 class reportJoinWords(BaseReporter):
-
-    def report_ast(self, ctx):
-        args = self.children[0].children
-        left = args[0].to_ast(ctx)
-        for right in args[1:]:
-            right = right.to_ast(ctx)
-            left = ast.BinOp(left, ast.Add(), right)
-        return left
+    pass
 
 
 class reportListItem(BaseReporter):
-
-    def report_ast(self, ctx):
-        index = ast.Index(ast.BinOp(self.children[0].to_ast(ctx),
-                                    ast.Sub(), ast.Num(1)))
-        variable = self.children[1].to_ast(ctx)
-        var = ast.Subscript(variable, index, ast.Load())
-        return var
+    pass
 
 
 class reportStringSize(BaseReporter):
-
-    def report_ast(self, ctx):
-        value = self.children[0].to_ast(ctx)
-        args = [value]
-        func = ast.Name('len', ast.Load())
-        return ast.Call(func, args, [], None, None)
+    pass
 
 
 class doInsertInList(Block):
@@ -360,10 +323,6 @@ class doDeclareVariables(Block):
 
 
 class doReport(BaseReporter):
-
-    def report_ast(self, ctx):
-        return self.children[0].to_ast(ctx)
-
     def to_ast(self, ctx):
         value = super(doReport, self).to_ast(ctx)
         return ast.Return(value)
@@ -643,7 +602,7 @@ def block_handler(name, qname, attributes):
 tag_parsers = {
     'l': LiteralBlock,
     'option': Option,
-    'list': Tag,
+    'list': List,
     'script': Script,
     'block': block_handler,
     'custom-block': CustomBlock,
@@ -699,7 +658,7 @@ builtin_blocks = {
     'reportTrue': reportTrue,  # getTrue
     # 'reportFalse': reportFalse,  # getFalse
     'reportJoinWords': reportJoinWords,  # concatenate:with:
-    'reportLetter': reportListItem,  # letter:of:
+    'reportLetter': reportLetter,  # letter:of:
     'reportStringSize': reportStringSize,  # stringLength:
     # 'reportUnicode': reportUnicode,  # asciiCodeOf
     # 'reportUnicodeAsLetter': 'reportUnicodeAsLetter',  # asciiLetter

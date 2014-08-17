@@ -103,6 +103,65 @@ class TestreportNewList(tests.BlockParser, unittest.TestCase):
     report = {'result': ['a', 'b', 10]}
 
 
+class TestreportCAR(tests.BlockParser, unittest.TestCase):
+    parser = parser.reportCAR
+
+    script = """
+    <block s="reportCAR">
+      <block s="reportNewList">
+        <list>
+          <l>a</l>
+          <l>b</l>
+          <l>10</l>
+        </list>
+      </block>
+    </block>
+    """
+
+    report = {'result': 'a'}
+
+
+class TestreportCDR(tests.BlockParser, unittest.TestCase):
+    parser = parser.reportCDR
+
+    script = """
+    <block s="reportCDR">
+      <block s="reportNewList">
+        <list>
+          <l>a</l>
+          <l>b</l>
+          <l>10</l>
+        </list>
+      </block>
+    </block>
+    """
+
+    report = {'result': ['b', 10]}
+
+
+class TestreportCONS(tests.BlockParser, unittest.TestCase):
+    parser = parser.reportCONS
+
+    script = """
+    <block s="doSetVar">
+      <l>i</l>
+      <l>hello</l>
+    </block>
+    <block s="reportCONS">
+      <block var="i"/>
+      <block s="reportNewList">
+        <list>
+          <l>a</l>
+          <l>b</l>
+          <l>10</l>
+        </list>
+      </block>
+    </block>
+    """
+
+    report = {'result': ['hello', 'a', 'b', 10]}
+
+
 class TestreportAnd(tests.BlockParser, unittest.TestCase):
     parser = parser.reportAnd
 
