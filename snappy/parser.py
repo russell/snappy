@@ -248,6 +248,33 @@ class reportNewList(BaseReporter):
                         ast.Load())
 
 
+class reportCAR(BaseReporter):
+
+    def report_ast(self, ctx):
+        index = ast.Index(ast.Num(0))
+        variable = self.children[0].to_ast(ctx)
+        var = ast.Subscript(variable, index, ast.Load())
+        return var
+
+
+class reportCDR(BaseReporter):
+
+    def report_ast(self, ctx):
+        index = ast.Slice(ast.Num(1), None, None)
+        variable = self.children[0].to_ast(ctx)
+        var = ast.Subscript(variable, index, ast.Load())
+        return var
+
+
+class reportCONS(BaseReporter):
+
+    def report_ast(self, ctx):
+        list1 = ast.List([self.children[0].to_ast(ctx)],
+                         ast.Load())
+        change = ast.BinOp(list1, ast.Add(), self.children[1].to_ast(ctx))
+        return change
+
+
 class reportJoinWords(BaseReporter):
 
     def report_ast(self, ctx):
@@ -259,7 +286,7 @@ class reportJoinWords(BaseReporter):
         return left
 
 
-class reportLetter(BaseReporter):
+class reportListItem(BaseReporter):
 
     def report_ast(self, ctx):
         index = ast.Index(ast.BinOp(self.children[0].to_ast(ctx),
@@ -361,22 +388,36 @@ class doIfElse(Block):
 
 
 class Evaluate(Block):
+    count = 0
+
+    def args_variable(self):
+        name = 'eval_' + str(self.count)
+        Evaluate.count += 1
+        storage = ast.Assign([ast.Name(name, ast.Store())],
+                             ast.List([], ast.Load()))
+        self.arg = ast.Name(name, ast.Load())
+        return storage
+
+    def add_argument(self, value):
+        func = ast.Attribute(value=self.arg, attr='append', ctx=ast.Load())
+        return ast.Expr(ast.Call(func, [value], [], None, None))
 
     def to_ast(self, ctx):
-        # TODO add argument support
-        assert not self.find_child(['list']).children, \
-            "Evaluate with arguments, isn't supported."
+        ctx.body.append(self.args_variable())
         args = []
         func = self.children[0].to_ast(ctx)
         func_name = self.children[0].block_name
+        for child in self.children[1].children:
+            ctx.body.append(self.add_argument(child.to_ast(ctx)))
+
         # If the thing being evaluated was passed in as an argument.
         # Then call it with all the args from the that were passed
-        # into this function.
+        # into this function.  This supports calling looping functions.
         if func_name in ctx.function.function_arguments:
             args = [ast.Name(arg, ast.Load())
                     for arg in ctx.function.function_arguments]
             return ast.Call(func, args, [], None, None)
-        return ast.Call(func, args, [], None, None)
+        return ast.Call(func, args, [], self.arg, None)
 
 
 class doUntil(Block):
@@ -410,17 +451,39 @@ class doWarp(Block):
 class Autolambda(Block):
 
     def to_ast(self, ctx):
-        args = ast.arguments([], None, None, [])
-        return ast.Lambda(args, self.children[0].to_ast(ctx))
+        return self.children[0].to_ast(ctx)
 
 
 class Reify(Block):
+    count = 0
+
+    def gen_name(self):
+        name = 'reify_' + str(self.count)
+        Reify.count += 1
+        return name
 
     def to_ast(self, ctx):
+        name = self.gen_name()
+        # TODO need to set the context variable here so that i can
+        # flatten autolambda statements.
+        ctx1 = ctx.copy()
+        ctx1.inherited_scope.extend([c.text for c in self.children[1]])
+
+        args = ast.arguments([ast.Name(arg.text, ast.Param())
+                              for arg in self.children[1]],
+                             None, None, [])
+        if isinstance(self.children[0], Autolambda):
+            body = [c.to_ast(ctx1) for c in self.children[0].children]
+        else:
+            body = self.children[0].to_ast(ctx1)
+        if self.attributes['s'] == 'reifyReporter':
+            body[-1] = ast.Return(body[-1])
+        fn = ast.FunctionDef(name, args, body, [])
+        ctx.body.append(fn)
         # TODO this isn't the correct implementation, but i have no
         # idea what ringification actually does.  It looks like it's
         # just thing or empty list, but I'm not sure
-        return self.children[0].to_ast(ctx)
+        return ast.Name(name, ast.Load())
 
 
 class Script(BaseBlock):
@@ -636,7 +699,7 @@ builtin_blocks = {
     'reportTrue': reportTrue,  # getTrue
     # 'reportFalse': reportFalse,  # getFalse
     'reportJoinWords': reportJoinWords,  # concatenate:with:
-    'reportLetter': reportLetter,  # letter:of:
+    'reportLetter': reportListItem,  # letter:of:
     'reportStringSize': reportStringSize,  # stringLength:
     # 'reportUnicode': reportUnicode,  # asciiCodeOf
     # 'reportUnicodeAsLetter': 'reportUnicodeAsLetter',  # asciiLetter
@@ -644,6 +707,9 @@ builtin_blocks = {
     # 'reportRound': reportRound,  # rounded
     # 'reportMonadic': reportMonadic,  # computeFunction:of:
     # 'reportIsA': reportIsA,  # isObject:type:
+    'reportCAR': reportCAR,
+    'reportCDR': reportCDR,
+    'reportCONS': reportCONS,
 
     #
     # Variables
@@ -658,7 +724,7 @@ builtin_blocks = {
     # 'doDeleteFromList': doDeleteFromList,
     'doInsertInList': doInsertInList,
     # 'doReplaceInList': doReplaceInList,
-    # 'reportListItem': reportListItem,
+    'reportListItem': reportListItem,
     # 'reportListLength': reportListLength,
     # 'reportListContainsItem': reportListContainsItem,
 

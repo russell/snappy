@@ -132,7 +132,7 @@ class TestreportEquals(tests.BlockParser, unittest.TestCase):
 
 
 class TestreportLetter(tests.BlockParser, unittest.TestCase):
-    parser = parser.reportLetter
+    parser = parser.reportListItem
 
     script = """
     <block s="reportLetter">
@@ -386,3 +386,21 @@ class TestWHWordsFunction(tests.BlockParser, unittest.TestCase):
     xml = open(path.join(SAMPLE_PROGRAMS, 'wh_words.xml')).read()
 
     report = {'result': [u'whoever', u'Who', u'What.', u'What']}
+
+
+class TestReverseBlock(tests.BlockParser, unittest.TestCase):
+    xml = open(path.join(SAMPLE_PROGRAMS, 'base_blocks.xml')).read()
+
+    script = """
+    <custom-block s="reverse %l">
+      <block s="reportNewList">
+        <list>
+          <l>!</l>
+          <l>World</l>
+          <l>Hello</l>
+        </list>
+      </block>
+    </custom-block>
+    """
+
+    report = {'result': ['Hello', 'World', '!']}
