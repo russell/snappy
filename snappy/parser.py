@@ -276,6 +276,10 @@ class reportStringSize(BaseReporter):
     pass
 
 
+class reportSum(BaseReporter):
+    pass
+
+
 class doInsertInList(Block):
 
     def to_ast(self, ctx):
@@ -652,7 +656,7 @@ builtin_blocks = {
     #
     # Operators
     #
-    # 'reportSum': reportSum,  # +
+    'reportSum': reportSum,  # +
     # 'reportDifference': reportDifference,  # -
     # 'reportProduct': reportProduct,  # *
     # 'reportQuotient': reportQuotient,  # /

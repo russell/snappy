@@ -92,3 +92,7 @@ def reportListItem(a, b):
 
 def reportStringSize(a):
     return doReport(len(a))
+
+
+def reportSum(a, b):
+    return doReport(a + b)

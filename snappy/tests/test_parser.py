@@ -463,3 +463,15 @@ class TestReverseBlock(tests.BlockParser, unittest.TestCase):
     """
 
     report = {'result': ['Hello', 'World', '!']}
+
+
+class TestAllButTheLastLetter(tests.BlockParser, unittest.TestCase):
+    xml = open(path.join(SAMPLE_PROGRAMS, 'base_blocks.xml')).read()
+
+    script = """
+    <custom-block s="all but last letter of %txt">
+      <l>Who picks up the ball and throws it to What.</l>
+    </custom-block>
+    """
+
+    report = {'result': 'Who picks up the ball and throws it to What'}
