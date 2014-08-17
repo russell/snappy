@@ -4,6 +4,7 @@ import os
 import sys
 import uuid
 
+from twisted.application import service
 from twisted.internet import reactor, defer, protocol
 from twisted.python import log
 from twisted.web.resource import Resource
@@ -12,13 +13,11 @@ import astor
 
 from snappy import parser
 
-JOB_DIR = 'jobs/'
 
-
-def generate_job_id():
+def generate_job_id(jobs_dir):
     while True:
         id = uuid.uuid1()
-        if id in os.listdir(JOB_DIR):
+        if id in os.listdir(jobs_dir):
             continue
         return str(id)
 
@@ -100,14 +99,15 @@ class JobProcess(protocol.ProcessProtocol):
 
 class JobHandler(Resource):
 
-    def __init__(self, handler, id, body=None):
+    def __init__(self, handler, service, id, body=None):
         Resource.__init__(self)
         self.state = 'finished'
         self.started = None
         self.finished = None
         self.handler = handler
+        self.service = service
         self.id = id
-        self.job_dir = os.path.join(JOB_DIR, id)
+        self.job_dir = os.path.join(self.service.jobs_dir, id)
         self.job_process = None
         self.result_file = os.path.join(self.job_dir, 'result.json')
         self.log_file = os.path.join(self.job_dir, 'job.log')
@@ -129,8 +129,9 @@ class JobHandler(Resource):
         return NoResource()
 
     def startJob(self, body):
-        os.mkdir(self.job_dir)
         project = json.loads(body)
+
+        os.mkdir(self.job_dir)
 
         # sprit_id = project['sprite_idx']
         block_id = project['block_idx']
@@ -163,7 +164,8 @@ class JobHandler(Resource):
         self.finished = datetime.datetime.now()
         # Write process state
         state = self.state_dict()
-        del state['result']
+        if 'result' in state:
+            del state['result']
         open(self.state_file, 'w').write(json.dumps(state))
         self.handler.unregisterJob(self)
 
@@ -171,7 +173,7 @@ class JobHandler(Resource):
         state = {'state': self.state,
                  'id': self.id,
                  'started': (self.started.isoformat()
-                             if self.finished else None),
+                             if self.started else None),
                  'finished': (self.finished.isoformat()
                               if self.finished else None)}
         if os.path.exists(self.result_file):
@@ -194,24 +196,29 @@ class JobHandler(Resource):
 
 
 class JobsHandler(Resource):
+    def __init__(self, service):
+        self.service = service
+        self.children = {}
 
     def getChild(self, name, request):
-        if name in os.listdir(JOB_DIR):
-            return JobHandler(self, name)
+        if name in os.listdir(self.service.jobs_dir):
+            return JobHandler(self, self.service, name)
         return NoResource()
 
     def render_GET(self, request):
         request.setHeader("Access-Control-Allow-Origin", "*")
         request.setHeader("content-type", "application/json")
-        return json.dumps({'jobs': {'running': len(self.children),
-                                    'completed': len(os.listdir(JOB_DIR))}})
+        return json.dumps(
+            {'jobs':
+             {'running': len(self.children),
+              'completed': len(os.listdir(self.service.jobs_dir))}})
 
     def render_POST(self, request):
         request.setHeader("Access-Control-Allow-Origin", "*")
         request.setHeader("content-type", "application/json")
         body = request.content.read()
-        id = generate_job_id()
-        self.children[id] = JobHandler(self, id, body)
+        id = generate_job_id(self.service.jobs_dir)
+        self.children[id] = JobHandler(self, self.service, id, body)
         return json.dumps({'id': str(id)})
 
     def unregisterJob(self, job):
@@ -220,9 +227,20 @@ class JobsHandler(Resource):
 
 
 class SnappySite(Resource):
-    def __init__(self):
+    def __init__(self, service):
+        self.service = service
         self.children = {
-            'jobs': JobsHandler()
+            'jobs': JobsHandler(service)
         }
-        if not os.path.exists(JOB_DIR):
-            os.mkdir(JOB_DIR)
+        if not os.path.exists(self.service.jobs_dir):
+            os.mkdir(self.service.jobs_dir)
+
+
+class SnapServer(service.Service):
+
+    def __init__(self, jobs_dir='jobs/'):
+        self.jobs_dir = jobs_dir
+
+    def getResource(self):
+        r = SnappySite(self)
+        return r

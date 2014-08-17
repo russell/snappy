@@ -1,24 +1,20 @@
 # -*- mode: Python -*-
 # You can run this .tac file directly with:
-#    twistd -ny service.tac
+#    twistd -ny webserver.tac
 
 """
 """
 
-import os
 from twisted.application import service, internet
-from twisted.web import static, server
+from twisted.web import server
 from snappy import webserver
-
-def getWebService():
-    # create a resource to serve static files
-    snappyserver= server.Site(webserver.SnappySite())
-    return internet.TCPServer(8888, snappyserver)
 
 # this is the core part of any tac file, the creation of the root-level
 # application object
 application = service.Application("Snappy Server")
 
-# attach the service to its parent application
-service = getWebService()
-service.setServiceParent(application)
+snappy = webserver.SnapServer()
+serviceCollection = service.IServiceCollection(application)
+snappy.setServiceParent(serviceCollection)
+internet.TCPServer(8888, server.Site(snappy.getResource())
+                   ).setServiceParent(serviceCollection)
